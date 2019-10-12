@@ -2,7 +2,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
-public class ChatClient {
+public class SecondChatClient {
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(String[] args) {
         if (System.getSecurityManager() == null) {
@@ -13,7 +13,7 @@ public class ChatClient {
             Scanner s = new Scanner(System.in);
 
             String name = "ducanhchatapp";
-            String clientName = "ducanhclient";
+            String clientName = "anonymous_client";
             Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
             ChatInterface client = new Chat(clientName);
             ChatInterface server = (ChatInterface) myReg.lookup(name);
