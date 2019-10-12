@@ -1,0 +1,3 @@
+javac -d ./out/ ./src/*.java
+java -cp ./out -Djava.rmi.server.hostname="172.17.0.2" -Djava.security.policy=client.policy ChatClient
+
