@@ -14,10 +14,11 @@ public class SecondChatClient {
 
             String name = "ducanhchatapp";
             String clientName = "anonymous_client";
+            String clientId = "anon1";
             Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
             ChatInterface client = new Chat(clientName);
             ChatInterface server = (ChatInterface) myReg.lookup(name);
-            server.setClients(client);
+            server.setClients(clientId, client);
             String msg = "[" + client.getName() + "] " + "is connected";
             server.send(msg);
             System.out.println("[System] Chat Remote Object is ready:");
