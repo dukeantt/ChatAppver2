@@ -21,11 +21,12 @@ public class ChatClient {
             String msg = "[" + client.getName() + "] " + "is connected";
             server.send(msg);
             System.out.println("[System] Chat Remote Object is ready:");
-
+            ChatInterface clientObject = new Chat("anon");
             while (true) {
                 msg = s.nextLine().trim();
                 msg = "[" + client.getName() + "] " + msg;
                 server.send(msg);
+                server.getClientById("anon1").send(msg);
             }
 
         } catch (Exception e) {
