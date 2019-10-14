@@ -1,5 +1,4 @@
 SERVER_IMG_NAME = chatapp
-DOCKERPS = 
 
 server_up:
 	docker run -v `pwd`/chatserver/:/usr/app --rm $(SERVER_IMG_NAME)
