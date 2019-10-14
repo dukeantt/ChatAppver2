@@ -1,9 +1,12 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Chat implements ChatInterface {
     public String name;
     public ChatInterface client;
+    public List<ChatInterface> clients = new ArrayList<ChatInterface>();
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -20,12 +23,12 @@ public class Chat implements ChatInterface {
     }
 
     @Override
-    public void setClient(ChatInterface c) throws RemoteException {
-        this.client = c;
+    public void setClients(ChatInterface c) throws RemoteException {
+        this.clients.add(c);
     }
 
     @Override
-    public ChatInterface getClient() throws RemoteException {
-        return this.client;
+    public List<ChatInterface> getClient() throws RemoteException {
+        return this.clients;
     }
 }

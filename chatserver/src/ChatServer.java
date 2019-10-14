@@ -1,6 +1,7 @@
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.List;
 import java.util.Scanner;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -25,9 +26,11 @@ public class ChatServer {
             while (true) {
                 String msg = s.nextLine().trim();
                 if (server.getClient() != null) {
-                    ChatInterface client = server.getClient();
                     msg = "[" + server.getName() + "] " + msg;
-                    client.send(msg);
+                    List<ChatInterface> clients = server.getClient();
+                    for (int i = 0; i < clients.size(); i++) {
+                        clients.get(i).send(msg);
+                    }
                 }
             }
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface ChatInterface extends Remote {
 
@@ -7,8 +8,8 @@ public interface ChatInterface extends Remote {
 
     public void send(String msg) throws RemoteException;
 
-    public void setClient(ChatInterface c) throws RemoteException;
+    public void setClients(ChatInterface c) throws RemoteException;
 
-    public ChatInterface getClient() throws RemoteException;
+    public List<ChatInterface> getClient() throws RemoteException;
 
 }
