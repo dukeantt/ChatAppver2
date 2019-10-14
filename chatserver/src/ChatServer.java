@@ -1,7 +1,9 @@
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -25,12 +27,16 @@ public class ChatServer {
             Scanner s = new Scanner(System.in);
             while (true) {
                 String msg = s.nextLine().trim();
-                if (server.getClient() != null) {
+                if (server.getClients() != null) {
                     msg = "[" + server.getName() + "] " + msg;
-                    List<ChatInterface> clients = server.getClient();
-                    for (int i = 0; i < clients.size(); i++) {
-                        clients.get(i).send(msg);
+                    HashMap<String, ChatInterface> clients = server.getClients();
+                    for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                        ChatInterface client = clientMap.getValue();
+                        client.send(msg);
                     }
+//                    for (int i = 0; i < clients.size(); i++) {
+//                        clients.get(i).send(msg);
+//                    }
                 }
             }
         } catch (Exception e) {
