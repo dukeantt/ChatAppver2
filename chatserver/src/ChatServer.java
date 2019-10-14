@@ -21,6 +21,15 @@ public class ChatServer {
             registry.rebind(name, stub);
             System.out.println("Server is ready");
 
+            Scanner s = new Scanner(System.in);
+            while (true) {
+                String msg = s.nextLine().trim();
+                if (server.getClient() != null) {
+                    ChatInterface client = server.getClient();
+                    msg = "[" + server.getName() + "] " + msg;
+                    client.send(msg);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -17,10 +17,10 @@ public class ChatClient {
             Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
             ChatInterface client = new Chat(clientName);
             ChatInterface server = (ChatInterface) myReg.lookup(name);
+            server.setClient(client);
             String msg = "[" + client.getName() + "] " + "is connected";
             server.send(msg);
             System.out.println("[System] Chat Remote Object is ready:");
-//            server.setClient(client);
 
             while (true) {
                 msg = s.nextLine().trim();
