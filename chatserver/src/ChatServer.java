@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -28,15 +29,14 @@ public class ChatServer {
             while (true) {
                 String msg = s.nextLine().trim();
                 if (server.getClients() != null) {
-                    msg = "[" + server.getName() + "] " + msg;
                     HashMap<String, ChatInterface> clients = server.getClients();
                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                         ChatInterface client = clientMap.getValue();
-                        client.send(msg);
+//                        msg = "[" + server.getName() + "] " + msg;
+                        client.printMsg("[" + server.getName() + "] " + msg);
+                        client.setMsg(msg);
+                        client.setIsNewMessage(true);
                     }
-//                    for (int i = 0; i < clients.size(); i++) {
-//                        clients.get(i).send(msg);
-//                    }
                 }
             }
         } catch (Exception e) {

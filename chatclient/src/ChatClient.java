@@ -44,7 +44,6 @@ public class ChatClient {
         if (System.getSecurityManager() == null) {
             System.setProperty("java.security.policy", "client.policy");
             System.setSecurityManager(new SecurityManager());
-            System.out.println(hostName);
             System.setProperty("java.rmi.server.hostname", hostName);
         }
         try {
@@ -57,13 +56,18 @@ public class ChatClient {
             ChatInterface server = (ChatInterface) myReg.lookup(name);
             server.setClients(clientId, client);
             String msg = "[" + client.getName() + "] " + "is connected";
-            server.send(msg);
+            server.setMsg(msg);
             System.out.println("[System] Chat Remote Object is ready:");
             ChatInterface clientObject = new Chat("anon");
             while (true) {
                 msg = s.nextLine().trim();
                 msg = "[" + client.getName() + "] " + msg;
-                server.send(msg);
+                server.printMsg(msg);
+                server.setMsg(msg);
+                System.out.println(client.getMsg());
+//                if (client.getMsg() != null && !client.getMsg().isEmpty()) {
+//                    System.out.println(client.getMsg());
+//                }
 //                server.getClientById("anon1").send(msg);
             }
 
