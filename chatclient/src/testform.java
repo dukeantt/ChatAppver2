@@ -2,8 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -16,22 +14,16 @@ import java.util.Enumeration;
 
 @SuppressWarnings("InfiniteLoopStatement")
 
-public class testform extends OutputStream {
+public class testform {
     private JTextField textField1;
     private JTextArea textArea1;
     private JButton sendButton;
     private JList list1;
     private JPanel panelMain;
 
-    public testform() throws RemoteException, NotBoundException {
+    public testform(ChatInterface client, ChatInterface server) throws RemoteException, NotBoundException {
         textArea1.setEditable(false);
         sendButton.addActionListener(sendMessageToOthers);
-        String name = "ducanhchatapp";
-        String clientName = "ducanhclient";
-        String clientId = "ducanh";
-        Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
-        ChatInterface server = (ChatInterface) myReg.lookup(name);
-        ChatInterface client = server.getClients().get(clientId);
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -47,7 +39,7 @@ public class testform extends OutputStream {
                         e.printStackTrace();
                     }
                     if (messageOfServer != null && isNewMessage) {
-                        String msg  = "[" + serverName + "]: " + messageOfServer;
+                        String msg = "[" + serverName + "]: " + messageOfServer;
                         textArea1.append("\n" + msg);
                         try {
                             client.setIsNewMessage(false);
@@ -61,13 +53,10 @@ public class testform extends OutputStream {
         new Thread(r).start();
     }
 
-    @Override
-    public void write(int i) throws IOException {
-
-    }
-
     public static void main(String[] args) throws RemoteException, NotBoundException {
         String ip;
+        ChatInterface client = null;
+        ChatInterface server = null;
         String hostName = "127.0.0.1";
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -108,8 +97,8 @@ public class testform extends OutputStream {
             String clientName = "ducanhclient";
             String clientId = "ducanh";
             Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
-            ChatInterface client = new Chat(clientName);
-            ChatInterface server = (ChatInterface) myReg.lookup(name);
+            client = new Chat(clientName);
+            server = (ChatInterface) myReg.lookup(name);
             server.setClients(clientId, client);
 
             String msg = "[" + client.getName() + "] " + "is connected";
@@ -122,7 +111,7 @@ public class testform extends OutputStream {
 
         JFrame frame = new JFrame("test");
         frame.setPreferredSize(new Dimension(640, 480));
-        frame.setContentPane(new testform().panelMain);
+        frame.setContentPane(new testform(client, server).panelMain);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -139,7 +128,6 @@ public class testform extends OutputStream {
                 Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
                 ChatInterface server = (ChatInterface) myReg.lookup(name);
                 ChatInterface client = server.getClients().get(clientId);
-
                 server.printMsg("[" + client.getName() + "] " + messageInTextField);
                 server.setMsg(messageInTextField);
                 textField1.setText("");

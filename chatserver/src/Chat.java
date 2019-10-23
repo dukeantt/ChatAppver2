@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,6 @@ public class Chat implements ChatInterface {
     public List<ChatInterface> clients = new ArrayList<ChatInterface>();
     public HashMap<String, ChatInterface> clientsMap = new HashMap<String, ChatInterface>();
     public String message;
-    public JTextArea textArea;
     public boolean isNewMessage;
 
     public Chat(String name) throws RemoteException {
@@ -48,27 +46,9 @@ public class Chat implements ChatInterface {
         return this.clientsMap.get(clientId);
     }
 
-
     @Override
-    public void setTextArea(JTextArea textArea) throws RemoteException {
-        this.textArea = textArea;
-
-    }
-
-    @Override
-    public JTextArea getTextArea() throws RemoteException {
-        return this.textArea;
-    }
-
-    @Override
-    public void appendTextArea(JTextArea textArea, String msg) throws RemoteException {
-        textArea.append(msg + "\n");
-    }
-
-    @Override
-    public String printMsg(String msg) throws RemoteException {
+    public void printMsg(String msg) throws RemoteException {
         System.out.println(msg);
-        return msg;
     }
 
     @Override
