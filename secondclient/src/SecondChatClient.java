@@ -20,13 +20,13 @@ public class SecondChatClient {
             ChatInterface server = (ChatInterface) myReg.lookup(name);
             server.setClients(clientId, client);
             String msg = "[" + client.getName() + "] " + "is connected";
-            server.send(msg);
+            server.printMsg(msg);
             System.out.println("[System] Chat Remote Object is ready:");
 
             while (true) {
                 msg = s.nextLine().trim();
                 msg = "[" + client.getName() + "] " + msg;
-                server.send(msg);
+                server.printMsg(msg);
             }
 
         } catch (Exception e) {

@@ -9,6 +9,8 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     public ChatInterface client;
     public List<ChatInterface> clients = new ArrayList<ChatInterface>();
     public HashMap<String, ChatInterface> clientsMap = new HashMap<String, ChatInterface>();
+    public String message;
+    public boolean isNewMessage;
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -20,8 +22,13 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     }
 
     @Override
-    public void send(String msg) throws RemoteException {
-        System.out.println(msg);
+    public void setMsg(String msg) throws RemoteException {
+        this.message = msg;
+    }
+
+    @Override
+    public String getMsg() throws RemoteException {
+        return this.message;
     }
 
     @Override
@@ -37,5 +44,20 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     @Override
     public ChatInterface getClientById(String clientId) throws RemoteException {
         return this.clientsMap.get(clientId);
+    }
+
+    @Override
+    public void printMsg(String msg) throws RemoteException {
+        System.out.println(msg);
+    }
+
+    @Override
+    public void setIsNewMessage(boolean i) throws RemoteException {
+        this.isNewMessage = i;
+    }
+
+    @Override
+    public boolean getIsNewMessage() throws RemoteException {
+        return this.isNewMessage;
     }
 }
