@@ -23,4 +23,7 @@ public interface ChatInterface extends Remote {
 
     public boolean getIsNewMessage() throws RemoteException;
 
+    public void setClientId(String clientId) throws RemoteException;
+
+    public String getClientId() throws RemoteException;
 }

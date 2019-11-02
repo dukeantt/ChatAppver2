@@ -29,3 +29,4 @@ secondclient/.idea/
 chatclient/out/
 chatserver/out/
 secondclient/out/
+mysql/*

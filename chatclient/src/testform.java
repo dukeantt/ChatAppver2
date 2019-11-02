@@ -19,7 +19,10 @@ public class testform {
     private JTextArea textArea1;
     private JButton sendButton;
     private JList list1;
-    private JPanel panelMain;
+    public JPanel panelMain;
+
+    public testform() {
+    }
 
     public testform(ChatInterface client, ChatInterface server) throws RemoteException, NotBoundException {
         textArea1.setEditable(false);
@@ -114,6 +117,7 @@ public class testform {
         frame.setContentPane(new testform(client, server).panelMain);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
