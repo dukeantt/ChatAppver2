@@ -96,7 +96,7 @@ public class testform {
         }
 
         try {
-            String name = "ducanhchatapp";
+            String name = "RMIchatapp";
             String clientName = "ducanhclient";
             String clientId = "ducanh";
             Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
@@ -126,7 +126,7 @@ public class testform {
         public void actionPerformed(ActionEvent actionEvent) {
             try {
                 String messageInTextField = textField1.getText();
-                String name = "ducanhchatapp";
+                String name = "RMIchatapp";
                 String clientName = "ducanhclient";
                 String clientId = "ducanh";
                 Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);

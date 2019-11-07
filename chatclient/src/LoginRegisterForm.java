@@ -16,6 +16,7 @@ public class LoginRegisterForm extends JFrame {
 
     public LoginRegisterForm() {
         add(panelMain);
+        getRootPane().setDefaultButton(loginRegisterButton);
         setTitle("Login/Register");
         setSize(300, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,14 +37,14 @@ public class LoginRegisterForm extends JFrame {
                     Boolean isUserOrPasswordEmpty = true;
 
                     //SERVER INFORMATION
-                    String serverName = "ducanhchatapp";
+                    String serverName = "RMIchatapp";
                     String serverIp = "172.17.0.2";
                     int port = 6000;
 
                     //CLIENT INFORMATION
                     user = userTextField.getText();
                     password = passwordTextField.getText();
-                    if (user.isEmpty() || user == null || password.isEmpty() || password == null) {
+                    if (user.isEmpty() || password.isEmpty()) {
                         JOptionPane.showMessageDialog(panelMain, "Check your username or password again pal   ");
                     }else{
                         isUserOrPasswordEmpty = false;
@@ -71,7 +72,7 @@ public class LoginRegisterForm extends JFrame {
                         e.printStackTrace();
                     }
                         if (client != null) {
-                            JOptionPane.showMessageDialog(panelMain, "Cool!!!");
+//                            JOptionPane.showMessageDialog(panelMain, "Cool!!!");
                             setVisible(false);
                             ChatForm chatForm = null;
                             try {

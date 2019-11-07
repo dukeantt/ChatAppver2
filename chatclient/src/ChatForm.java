@@ -18,6 +18,7 @@ public class ChatForm extends JFrame {
 
     public ChatForm(ChatInterface client, ChatInterface server) throws RemoteException {
         add(panelMain);
+        getRootPane().setDefaultButton(sendButton);
         outputTextArea.setEditable(false);
         setTitle("Simple chat app");
         setSize(640, 480);

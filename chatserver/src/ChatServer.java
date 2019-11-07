@@ -17,9 +17,9 @@ public class ChatServer {
             System.setSecurityManager(new SecurityManager());
         }
         try {
-            String name = "ducanhchatapp";
+            String name = "RMIchatapp";
             int port = 6000;
-            ChatInterface server = new Chat("ducanhchatapp");
+            ChatInterface server = new Chat("RMIchatapp");
             ChatInterface stub = (ChatInterface) UnicastRemoteObject.exportObject(server, port);
             Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind(name, stub);

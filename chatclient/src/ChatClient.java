@@ -48,7 +48,7 @@ public class ChatClient {
         }
         try {
             Scanner s = new Scanner(System.in);
-            String name = "ducanhchatapp";
+            String name = "RMIchatapp";
             String clientName = "ducanhclient";
             String clientId = "ducanh";
             Registry myReg = LocateRegistry.getRegistry("172.17.0.2", 6000);
