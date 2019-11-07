@@ -30,3 +30,4 @@ chatclient/out/
 chatserver/out/
 secondclient/out/
 mysql/*
+mysql/data
