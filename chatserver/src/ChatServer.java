@@ -48,7 +48,6 @@ public class ChatServer {
                                         String clientId = client.getClientId();
                                         server.removeClientFromHashMap(clientId);
 
-
                                         //CONNECT TO DATABASE
                                         String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
                                         String USER_NAME = "root";
@@ -57,7 +56,7 @@ public class ChatServer {
                                         conn = getConnection(DB_URL, USER_NAME, PASSWORD);
                                         Statement stmt = conn.createStatement();
                                         ResultSet rs = stmt.executeQuery("select * from users where username =" + "\'" + clientName + "\'");
-                                        // show data
+                                        // COMPARE DATA
                                         if (rs.next()) {
                                             String passwordInDb = rs.getString(3);
                                             if (password.equals(passwordInDb)) {

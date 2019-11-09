@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -17,6 +17,7 @@ public class LoginRegisterForm extends JFrame {
     private ChatInterface serverLocal;
 
     public LoginRegisterForm() {
+
         add(panelMain);
         getRootPane().setDefaultButton(loginRegisterButton);
         setTitle("Login/Register");
@@ -53,7 +54,7 @@ public class LoginRegisterForm extends JFrame {
                     }
                     byte[] array = new byte[6]; // length is bounded by 7
                     new Random().nextBytes(array);
-                    String randomString = new String(array, Charset.forName("UTF-8"));
+                    String randomString = new String(array, StandardCharsets.UTF_8);
                     String clientId = user + "_client_" + randomString;
 
 
@@ -65,6 +66,7 @@ public class LoginRegisterForm extends JFrame {
                             client.setClientId(clientId); //SET CLIENT ID TO GET IT IN CHATFORM.JAVA
                             server = (ChatInterface) myReg.lookup(serverName); // GET SERVER
 
+                            // SET DATA OF CLIENT TO VALIDATE IN SERVER
                             server.setClientsToValidate(clientId, client);
                             client.setClientId(clientId);
                             client.setClientPassword(password);
@@ -80,10 +82,12 @@ public class LoginRegisterForm extends JFrame {
                         setClientLocal(client);
                         setServerLocal(server);
 
-
+                        // THREAD TO RECEIVE VALIDATE USER FROM SERVER AND OPEN CHAT FORM
                         Runnable validateClient = new Runnable() {
                             @Override
                             public void run() {
+                                Loading loading = new Loading();
+                                loading.setVisible(true);
                                 ChatInterface server = getServerLocal();
                                 ChatInterface client = getClientLocal();
                                 while (true) {
@@ -97,34 +101,24 @@ public class LoginRegisterForm extends JFrame {
                                                 server.printMsg(msg);
                                                 System.out.println("[System] Chat Remote Object is ready:");
                                                 server.removeClientFromHashMap(clientId);
+                                                //OPEN CHATFORM
                                                 setVisible(false);
+                                                loading.setVisible(false);
                                                 openChatForm();
                                                 break;
                                             } catch (RemoteException e) {
                                                 e.printStackTrace();
-                                                JOptionPane.showMessageDialog(panelMain, "Failed to connect to server");
+                                                JOptionPane.showMessageDialog(panelMain, "Login/Register failed");
                                             }
-                                        }else{
-                                            JOptionPane.showMessageDialog(panelMain, "The username already exists and the password is incorrect ");
-                                            break;
                                         }
+
                                     } catch (RemoteException e) {
                                         e.printStackTrace();
                                     }
-
                                 }
                             }
                         };
                         new Thread(validateClient).start();
-
-                        //OPEN CHATFORM
-//                        try {
-//                            setVisible(false);
-//                            openChatForm();
-//                        } catch (RemoteException e) {
-//                            e.printStackTrace();
-//                            JOptionPane.showMessageDialog(panelMain, "Failed to connect to server");
-//                        }
                     }
                 }
             });
