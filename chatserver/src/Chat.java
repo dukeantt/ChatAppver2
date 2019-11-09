@@ -1,17 +1,21 @@
-import javax.swing.*;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+
 public class Chat implements ChatInterface {
-    public String name;
+    private String name;
     public ChatInterface client;
     public List<ChatInterface> clients = new ArrayList<ChatInterface>();
-    public HashMap<String, ChatInterface> clientsMap = new HashMap<String, ChatInterface>();
+    private HashMap<String, ChatInterface> clientsMap = new HashMap<String, ChatInterface>();
+    private HashMap<String, ChatInterface> clientsMapToValidate = new HashMap<String, ChatInterface>();
     public String message;
     public boolean isNewMessage;
     public String clientId;
+    private String password;
+    private boolean isValidate;
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -70,5 +74,41 @@ public class Chat implements ChatInterface {
     @Override
     public String getClientId() throws RemoteException {
         return this.clientId;
+    }
+
+    @Override
+    public void setClientPassword(String password) throws RemoteException {
+        this.password = password;
+    }
+
+    @Override
+    public String getClientPassword() throws RemoteException {
+        return this.password;
+    }
+
+    @Override
+    public void setClientsToValidate(String clientId, ChatInterface c) throws RemoteException {
+        this.clientsMapToValidate.put(clientId, c);
+
+    }
+
+    @Override
+    public HashMap<String, ChatInterface> getClientsToValidate() throws RemoteException {
+        return this.clientsMapToValidate;
+    }
+
+    @Override
+    public void removeClientFromHashMap(String clientId) throws RemoteException {
+        this.clientsMapToValidate.remove(clientId);
+    }
+
+    @Override
+    public void setValidate(boolean isValidate) throws RemoteException {
+        this.isValidate = isValidate;
+    }
+
+    @Override
+    public boolean getValidate() throws RemoteException {
+        return this.isValidate;
     }
 }

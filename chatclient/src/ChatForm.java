@@ -16,6 +16,7 @@ public class ChatForm extends JFrame {
     private String serverName;
     private String clientId;
 
+
     public ChatForm(ChatInterface client, ChatInterface server) throws RemoteException {
         add(panelMain);
         getRootPane().setDefaultButton(sendButton);

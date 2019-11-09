@@ -13,6 +13,8 @@ public class LoginRegisterForm extends JFrame {
     private JButton loginRegisterButton;
     private JTextField userTextField;
     private JPasswordField passwordTextField;
+    private ChatInterface clientLocal;
+    private ChatInterface serverLocal;
 
     public LoginRegisterForm() {
         add(panelMain);
@@ -34,7 +36,7 @@ public class LoginRegisterForm extends JFrame {
                     String password = "";
                     ChatInterface client = null;
                     ChatInterface server = null;
-                    Boolean isUserOrPasswordEmpty = true;
+                    boolean isUserOrPasswordEmpty = true;
 
                     //SERVER INFORMATION
                     String serverName = "RMIchatapp";
@@ -46,48 +48,109 @@ public class LoginRegisterForm extends JFrame {
                     password = passwordTextField.getText();
                     if (user.isEmpty() || password.isEmpty()) {
                         JOptionPane.showMessageDialog(panelMain, "Check your username or password again pal   ");
-                    }else{
+                    } else {
                         isUserOrPasswordEmpty = false;
                     }
                     byte[] array = new byte[6]; // length is bounded by 7
                     new Random().nextBytes(array);
                     String randomString = new String(array, Charset.forName("UTF-8"));
                     String clientId = user + "_client_" + randomString;
-                    System.out.println(user);
-                    System.out.println(password);
+
 
                     if (!isUserOrPasswordEmpty) {
-                    //CONNECT TO SERVER
-                    try {
-                        Registry myReg = LocateRegistry.getRegistry(serverIp, port);
-                        client = new Chat(user); // CREATE CLIENT
-                        client.setClientId(clientId); //SET CLIENT ID TO GET IT IN CHATFORM.JAVA
-                        server = (ChatInterface) myReg.lookup(serverName); // GET SERVER
-                        server.setClients(clientId, client); //SET CLIENT ON SERVER AND SERVER WILL ADD CLIENT INFO TO DATABASE
+                        //CONNECT TO SERVER
+                        try {
+                            Registry myReg = LocateRegistry.getRegistry(serverIp, port);
+                            client = new Chat(user); // CREATE CLIENT
+                            client.setClientId(clientId); //SET CLIENT ID TO GET IT IN CHATFORM.JAVA
+                            server = (ChatInterface) myReg.lookup(serverName); // GET SERVER
 
-                        String msg = "[" + client.getName() + "] " + "is connected";
-                        server.printMsg(msg);
-                        System.out.println("[System] Chat Remote Object is ready:");
-                    } catch (RemoteException | NotBoundException e) {
-                        e.printStackTrace();
-                    }
-                        if (client != null) {
-//                            JOptionPane.showMessageDialog(panelMain, "Cool!!!");
-                            setVisible(false);
-                            ChatForm chatForm = null;
-                            try {
-                                assert server != null;
-                                chatForm = new ChatForm(client,server);
-                                chatForm.setVisible(true);
-                            } catch (RemoteException e) {
-                                e.printStackTrace();
-                            }
-                        }else {
-                            JOptionPane.showMessageDialog(panelMain, "Failed to connect to server");
+                            server.setClientsToValidate(clientId, client);
+                            client.setClientId(clientId);
+                            client.setClientPassword(password);
+
+//                            server.setClients(clientId, client); //SET CLIENT ON SERVER AND SERVER WILL ADD CLIENT INFO TO DATABASE
+//
+//                            String msg = "[" + client.getName() + "] " + "is connected";
+//                            server.printMsg(msg);
+//                            System.out.println("[System] Chat Remote Object is ready:");
+                        } catch (RemoteException | NotBoundException e) {
+                            e.printStackTrace();
                         }
+                        setClientLocal(client);
+                        setServerLocal(server);
+
+
+                        Runnable validateClient = new Runnable() {
+                            @Override
+                            public void run() {
+                                ChatInterface server = getServerLocal();
+                                ChatInterface client = getClientLocal();
+                                while (true) {
+                                    try {
+                                        boolean isValidate = server.getValidate();
+                                        if (isValidate) {
+                                            try {
+                                                server.setClients(clientId, client); //SET CLIENT ON SERVER AND SERVER WILL ADD CLIENT INFO TO DATABASE
+
+                                                String msg = "[" + client.getName() + "] " + "is connected";
+                                                server.printMsg(msg);
+                                                System.out.println("[System] Chat Remote Object is ready:");
+                                                server.removeClientFromHashMap(clientId);
+                                                setVisible(false);
+                                                openChatForm();
+                                                break;
+                                            } catch (RemoteException e) {
+                                                e.printStackTrace();
+                                                JOptionPane.showMessageDialog(panelMain, "Failed to connect to server");
+                                            }
+                                        }else{
+                                            JOptionPane.showMessageDialog(panelMain, "The username already exists and the password is incorrect ");
+                                            break;
+                                        }
+                                    } catch (RemoteException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                            }
+                        };
+                        new Thread(validateClient).start();
+
+                        //OPEN CHATFORM
+//                        try {
+//                            setVisible(false);
+//                            openChatForm();
+//                        } catch (RemoteException e) {
+//                            e.printStackTrace();
+//                            JOptionPane.showMessageDialog(panelMain, "Failed to connect to server");
+//                        }
                     }
                 }
             });
         }
     };
+
+    private void openChatForm() throws RemoteException {
+        ChatInterface client = getClientLocal();
+        ChatInterface server = getServerLocal();
+        ChatForm chatForm = new ChatForm(client, server);
+        chatForm.setVisible(true);
+    }
+
+    private void setClientLocal(ChatInterface client) {
+        this.clientLocal = client;
+    }
+
+    private ChatInterface getClientLocal() {
+        return this.clientLocal;
+    }
+
+    private void setServerLocal(ChatInterface server) {
+        this.serverLocal = server;
+    }
+
+    private ChatInterface getServerLocal() {
+        return this.serverLocal;
+    }
 }

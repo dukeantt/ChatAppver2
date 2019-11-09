@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -14,25 +15,11 @@ public class ChatServer {
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(String[] args) throws SQLException {
         if (System.getSecurityManager() == null) {
-            System.setProperty("java.security.policy","server.policy");
+            System.setProperty("java.security.policy", "server.policy");
             System.setSecurityManager(new SecurityManager());
         }
 
-        //CONNECT TO DATABASE
-        String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
-        String USER_NAME = "root";
-        String PASSWORD = "1";
-        Connection conn = null;
-        conn = getConnection(DB_URL, USER_NAME, PASSWORD);
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("select * from users");
-        // show data
-        while (rs.next()) {
-            System.out.println(rs.getInt(1) + "  " + rs.getString(2)
-                    + "  " + rs.getString(3));
-        }
-        // close connection
-        conn.close();
+
         try {
             String name = "RMIchatapp";
             int port = 6000;
@@ -41,6 +28,65 @@ public class ChatServer {
             Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind(name, stub);
             System.out.println("Server is ready");
+            server.setValidate(false);
+
+            //THREAD TO VALIDATE ACCOUNT ACCESS TO SERVER
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            Thread.sleep(2000);
+                            if (server.getClientsToValidate().size() != 0) {
+                                HashMap<String, ChatInterface> clients = server.getClientsToValidate();
+                                for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                    try {
+                                        ChatInterface client = clientMap.getValue();
+                                        assert client != null;
+                                        String clientName = client.getName();
+                                        String password = client.getClientPassword();
+                                        String clientId = client.getClientId();
+                                        server.removeClientFromHashMap(clientId);
+
+
+                                        //CONNECT TO DATABASE
+                                        String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
+                                        String USER_NAME = "root";
+                                        String PASSWORD = "1";
+                                        Connection conn = null;
+                                        conn = getConnection(DB_URL, USER_NAME, PASSWORD);
+                                        Statement stmt = conn.createStatement();
+                                        ResultSet rs = stmt.executeQuery("select * from users where username =" + "\'" + clientName + "\'");
+                                        // show data
+                                        if (rs.next()) {
+                                            String passwordInDb = rs.getString(3);
+                                            if (password.equals(passwordInDb)) {
+                                                server.setValidate(true);
+                                                server.removeClientFromHashMap(clientId);
+                                                System.out.println("correct");
+                                            } else {
+                                                server.setValidate(false);
+                                            }
+                                        }else{
+                                            server.setValidate(true);
+                                        }
+                                        // close connection
+                                        conn.close();
+                                    } catch (ConnectException e) {
+                                        e.printStackTrace();
+                                        break;
+                                    }
+
+                                }
+                            }
+
+                        } catch (RemoteException | InterruptedException | SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+            new Thread(r).start();
 
             Scanner s = new Scanner(System.in);
             while (true) {
@@ -58,6 +104,7 @@ public class ChatServer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
 
     }
 

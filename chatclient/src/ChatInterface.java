@@ -26,4 +26,17 @@ public interface ChatInterface extends Remote {
 
     public String getClientId() throws RemoteException;
 
+    public void setClientPassword(String password) throws RemoteException;
+
+    public String getClientPassword() throws RemoteException;
+
+    public void setClientsToValidate(String clientId, ChatInterface c) throws RemoteException;
+
+    public HashMap<String, ChatInterface> getClientsToValidate() throws RemoteException;
+
+    public void removeClientFromHashMap(String clientId) throws RemoteException;
+
+    public void setValidate(boolean isValidate) throws RemoteException;
+
+    public boolean getValidate() throws RemoteException;
 }

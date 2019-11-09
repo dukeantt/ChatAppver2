@@ -9,7 +9,6 @@ public class ChatClientGui {
     public static void main(String[] args) throws ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
         String ip;
         String hostName = "127.0.0.1";
-
         // GET CLIENT IP ADDRESS
         // ethernet duoc uu tien hon wifi
         try {
@@ -46,8 +45,6 @@ public class ChatClientGui {
             System.setSecurityManager(new SecurityManager());
             System.setProperty("java.rmi.server.hostname", hostName);
         }
-
-
 
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         SwingUtilities.invokeLater(new Runnable() {
