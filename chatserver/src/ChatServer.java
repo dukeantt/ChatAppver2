@@ -28,7 +28,7 @@ public class ChatServer {
             Registry registry = LocateRegistry.createRegistry(port);
             registry.rebind(name, stub);
             System.out.println("Server is ready");
-            server.setValidate(false);
+            server.setValidate(true);
 
             //THREAD TO VALIDATE ACCOUNT ACCESS TO SERVER
             Runnable r = new Runnable() {
@@ -36,7 +36,8 @@ public class ChatServer {
                 public void run() {
                     while (true) {
                         try {
-                            Thread.sleep(2000);
+                            Thread.sleep(1000);
+//                            System.out.println(server.getClientsToValidate().size());
                             if (server.getClientsToValidate().size() != 0) {
                                 HashMap<String, ChatInterface> clients = server.getClientsToValidate();
                                 for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
@@ -56,8 +57,14 @@ public class ChatServer {
                                         conn = getConnection(DB_URL, USER_NAME, PASSWORD);
                                         Statement stmt = conn.createStatement();
                                         ResultSet rs = stmt.executeQuery("select * from users where username =" + "\'" + clientName + "\'");
+
+                                        //PREPARE INSERT DATA TO DATABASE
+                                        String SQL = "INSERT INTO users(username,password,client_id) " + "VALUES(?,?,?)";
+                                        PreparedStatement preparedStatement = conn.prepareStatement(SQL);
+
                                         // COMPARE DATA
                                         if (rs.next()) {
+                                            System.out.println(rs.getString(3));
                                             String passwordInDb = rs.getString(3);
                                             if (password.equals(passwordInDb)) {
                                                 server.setValidate(true);
@@ -66,8 +73,15 @@ public class ChatServer {
                                             } else {
                                                 server.setValidate(false);
                                             }
-                                        }else{
+                                        } else {
                                             server.setValidate(true);
+                                            System.out.println("New user");
+                                            //SET USER DATA AND EXECUTE INSERT
+                                            preparedStatement.setString(1, clientName);
+                                            preparedStatement.setString(2, password);
+                                            preparedStatement.setString(3, clientId);
+                                            preparedStatement.addBatch();
+                                            preparedStatement.executeBatch();
                                         }
                                         // close connection
                                         conn.close();
@@ -75,11 +89,9 @@ public class ChatServer {
                                         e.printStackTrace();
                                         break;
                                     }
-
                                 }
                             }
-
-                        } catch (RemoteException | InterruptedException | SQLException e) {
+                        } catch (RemoteException | SQLException | InterruptedException e) {
                             e.printStackTrace();
                         }
                     }

@@ -20,7 +20,7 @@
         </constraints>
         <properties>
           <font size="36"/>
-          <text value="RMI Chat App"/>
+          <text value="Loading..."/>
           <verticalAlignment value="0"/>
           <verticalTextPosition value="0"/>
         </properties>

@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.nio.charset.StandardCharsets;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -52,9 +51,9 @@ public class LoginRegisterForm extends JFrame {
                     } else {
                         isUserOrPasswordEmpty = false;
                     }
-                    byte[] array = new byte[6]; // length is bounded by 7
-                    new Random().nextBytes(array);
-                    String randomString = new String(array, StandardCharsets.UTF_8);
+                    Random generator = new Random();
+                    int num = generator.nextInt(900000) + 100000;
+                    String randomString = String.valueOf(num);
                     String clientId = user + "_client_" + randomString;
 
 
@@ -71,11 +70,6 @@ public class LoginRegisterForm extends JFrame {
                             client.setClientId(clientId);
                             client.setClientPassword(password);
 
-//                            server.setClients(clientId, client); //SET CLIENT ON SERVER AND SERVER WILL ADD CLIENT INFO TO DATABASE
-//
-//                            String msg = "[" + client.getName() + "] " + "is connected";
-//                            server.printMsg(msg);
-//                            System.out.println("[System] Chat Remote Object is ready:");
                         } catch (RemoteException | NotBoundException e) {
                             e.printStackTrace();
                         }
@@ -86,8 +80,14 @@ public class LoginRegisterForm extends JFrame {
                         Runnable validateClient = new Runnable() {
                             @Override
                             public void run() {
+
                                 Loading loading = new Loading();
                                 loading.setVisible(true);
+                                try {
+                                    Thread.sleep(1200);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                                 ChatInterface server = getServerLocal();
                                 ChatInterface client = getClientLocal();
                                 while (true) {
@@ -96,7 +96,6 @@ public class LoginRegisterForm extends JFrame {
                                         if (isValidate) {
                                             try {
                                                 server.setClients(clientId, client); //SET CLIENT ON SERVER AND SERVER WILL ADD CLIENT INFO TO DATABASE
-
                                                 String msg = "[" + client.getName() + "] " + "is connected";
                                                 server.printMsg(msg);
                                                 System.out.println("[System] Chat Remote Object is ready:");
@@ -108,10 +107,14 @@ public class LoginRegisterForm extends JFrame {
                                                 break;
                                             } catch (RemoteException e) {
                                                 e.printStackTrace();
+                                                loading.setVisible(false);
                                                 JOptionPane.showMessageDialog(panelMain, "Login/Register failed");
                                             }
+                                        } else {
+                                            loading.setVisible(false);
+                                            JOptionPane.showMessageDialog(panelMain, "Login/Register failed");
+                                            break;
                                         }
-
                                     } catch (RemoteException e) {
                                         e.printStackTrace();
                                     }
