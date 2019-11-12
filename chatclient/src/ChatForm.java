@@ -12,6 +12,7 @@ public class ChatForm extends JFrame {
     private JTextField inputTextField;
     private JButton sendButton;
     private JList friendList;
+    private JButton addFriendButton;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -25,6 +26,9 @@ public class ChatForm extends JFrame {
         setSize(640, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        //ADD FRIEND
+        addFriendButton.addActionListener(openFindFriendWindow);
 
         // SEND MESSAGE TO SERVER
         clientName = client.getName();
@@ -62,7 +66,7 @@ public class ChatForm extends JFrame {
         new Thread(r).start();
     }
 
-    ActionListener sendMessage = new ActionListener() {
+    private ActionListener sendMessage = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             String serverIp = "172.17.0.2";
@@ -79,6 +83,19 @@ public class ChatForm extends JFrame {
             } catch (RemoteException | NotBoundException e) {
                 e.printStackTrace();
             }
+        }
+    };
+
+    private ActionListener openFindFriendWindow = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    FindFriend findFriend = new FindFriend();
+                    findFriend.setVisible(true);
+                }
+            });
         }
     };
 }
