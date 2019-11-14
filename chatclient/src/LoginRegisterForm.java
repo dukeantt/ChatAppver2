@@ -101,17 +101,21 @@ public class LoginRegisterForm extends JFrame {
                                                 System.out.println("[System] Chat Remote Object is ready:");
                                                 server.removeClientFromHashMap(clientId);
                                                 //OPEN CHATFORM
-                                                setVisible(false);
-                                                loading.setVisible(false);
+//                                                setVisible(false);
+                                                dispose();
+//                                                loading.setVisible(false);
+                                                loading.dispose();
                                                 openChatForm();
                                                 break;
                                             } catch (RemoteException e) {
                                                 e.printStackTrace();
-                                                loading.setVisible(false);
+//                                                loading.setVisible(false);
+                                                loading.dispose();
                                                 JOptionPane.showMessageDialog(panelMain, "Login/Register failed");
                                             }
                                         } else {
-                                            loading.setVisible(false);
+//                                            loading.setVisible(false);
+                                            loading.dispose();
                                             JOptionPane.showMessageDialog(panelMain, "Login/Register failed");
                                             break;
                                         }

@@ -39,4 +39,12 @@ public interface ChatInterface extends Remote {
     public void setValidate(boolean isValidate) throws RemoteException;
 
     public boolean getValidate() throws RemoteException;
+
+    public void setFriendToAdd(String user, String username) throws RemoteException;
+
+    public String getFriendToAdd() throws RemoteException;
+
+    public void setFriends(String friends) throws RemoteException;
+
+    public String getFriends() throws RemoteException;
 }

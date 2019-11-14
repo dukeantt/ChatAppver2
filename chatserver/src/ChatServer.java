@@ -64,7 +64,6 @@ public class ChatServer {
 
                                         // COMPARE DATA
                                         if (rs.next()) {
-                                            System.out.println(rs.getString(3));
                                             String passwordInDb = rs.getString(3);
                                             if (password.equals(passwordInDb)) {
                                                 server.setValidate(true);
@@ -99,6 +98,111 @@ public class ChatServer {
             };
             new Thread(r).start();
 
+            //THREAD TO HANDLE ADD FRIEND FEATURE
+            Runnable addFriend = new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            Thread.sleep(1000);
+
+                            if (server.getFriendToAdd() != null) {
+                                String friendToAdd = server.getFriendToAdd();
+                                String[] addFriend = friendToAdd.split(";");
+                                String username = addFriend[0];
+                                String friendName = addFriend[1];
+                                String userId = null;
+                                String friendId = null;
+
+                                //CONNECT TO DATABASE
+                                String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
+                                String USER_NAME = "root";
+                                String PASSWORD = "1";
+                                Connection conn = null;
+                                conn = getConnection(DB_URL, USER_NAME, PASSWORD);
+
+                                //  GET USER ID
+                                Statement stmt1 = conn.createStatement();
+                                ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + username + "\'");
+                                if (rs1.next()) {
+                                    userId = rs1.getString(4);
+                                    System.out.println(userId);
+                                }
+
+                                // GET FRIEND ID
+                                Statement stmt2 = conn.createStatement();
+                                ResultSet rs2 = stmt2.executeQuery("select * from users where username =" + "\'" + friendName + "\'");
+                                if (rs2.next()) {
+                                    friendId = rs2.getString(4);
+                                    System.out.println(friendId);
+                                }
+
+                                // ADD USER ID AND FRIEND IF TO FRIENDS TABLE
+                                if (userId != null) {
+
+                                    // CHECK IF USER ID IS EXISTED IN FRIENDS TABLE
+                                    Statement stmt3 = conn.createStatement();
+                                    ResultSet rs3 = stmt3.executeQuery("select * from friends where user_id =" + "\'" + userId + "\'");
+                                    if (rs3.next()) {
+                                        // IF USER ID EXISTED -> CONCAT FRIEND ID TO FRIENDS_ID COLUMN
+                                        Statement stmt4 = conn.createStatement();
+                                        int rs4 = stmt4.executeUpdate("update friends set friends_id = concat(friends_id," + "\'" + friendId + ";\'" + ")" + " WHERE user_id =" + "\'" + userId + "\'");
+
+                                        // CHECK IF FRIEND ID IS EXISTED IN TABLE
+                                        Statement stmt5 = conn.createStatement();
+                                        ResultSet rs5 = stmt5.executeQuery("select * from friends where user_id =" + "\'" + friendId + "\'");
+                                        if (rs5.next()) {
+                                            // IF EXISTED -> CONCAT USER ID TO FRIENDS_ID COLUMN
+                                            Statement stmt6 = conn.createStatement();
+                                            int rs6 = stmt6.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
+                                        } else {
+                                            // IF NOT EXISTED -> INSERT NEW ROW
+                                            String SQL = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
+                                            PreparedStatement preparedStatement3 = conn.prepareStatement(SQL);
+                                            preparedStatement3.setString(1, friendId);
+                                            preparedStatement3.setString(2, userId + ";");
+                                            preparedStatement3.addBatch();
+                                            preparedStatement3.executeBatch();
+                                        }
+
+                                        // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
+                                        server.setFriendToAdd(null, null);
+                                    } else {
+                                        // IF USER ID NOT EXISTED IN TABLE -> CREATE NEW ROW FOR USER ID
+                                        String SQL = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
+                                        PreparedStatement preparedStatement = conn.prepareStatement(SQL);
+                                        preparedStatement.setString(1, userId);
+                                        preparedStatement.setString(2, friendId + ";");
+                                        preparedStatement.addBatch();
+                                        preparedStatement.executeBatch();
+
+                                        // SHOULD CHECK  IF FRIEND ID EXISTED
+                                        // IF EXISTED -> CONCAT
+                                        // IF NOT -> NEW ROW
+                                        // FIX THIS NEXT TIME
+                                        PreparedStatement preparedStatement2 = conn.prepareStatement(SQL);
+                                        preparedStatement2.setString(1, friendId);
+                                        preparedStatement2.setString(2, userId + ";");
+                                        preparedStatement2.addBatch();
+                                        preparedStatement2.executeBatch();
+                                        System.out.println("add friend successfully");
+
+                                        // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
+                                        server.setFriendToAdd(null, null);
+                                    }
+                                }
+
+                            }
+                        } catch (RemoteException | SQLException | InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
+                }
+            };
+            new Thread(addFriend).start();
+
+            //SEND MESSAGE TO ALL CLIENT
             Scanner s = new Scanner(System.in);
             while (true) {
                 String msg = s.nextLine().trim();

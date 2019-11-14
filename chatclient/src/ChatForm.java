@@ -30,7 +30,7 @@ public class ChatForm extends JFrame {
         //ADD FRIEND
         addFriendButton.addActionListener(openFindFriendWindow);
 
-        // SEND MESSAGE TO SERVER
+        // CALL FUNCTION TO SEND MESSAGE TO SERVER
         clientName = client.getName();
         serverName = server.getName();
         clientId = client.getClientId();
@@ -50,6 +50,7 @@ public class ChatForm extends JFrame {
                         serverName = server.getName();
                     } catch (RemoteException e) {
                         e.printStackTrace();
+                        break;
                     }
                     if (messageOfServer != null && isNewMessage) {
                         String msg = "[" + serverName + "]: " + messageOfServer;
@@ -58,6 +59,7 @@ public class ChatForm extends JFrame {
                             client.setIsNewMessage(false);
                         } catch (RemoteException e) {
                             e.printStackTrace();
+                            break;
                         }
                     }
                 }
@@ -66,6 +68,7 @@ public class ChatForm extends JFrame {
         new Thread(r).start();
     }
 
+    // SEND MESSAGE TO SERVER
     private ActionListener sendMessage = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -86,13 +89,26 @@ public class ChatForm extends JFrame {
         }
     };
 
+    // OPEN ADD FRIEND WINDOW
     private ActionListener openFindFriendWindow = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    FindFriend findFriend = new FindFriend();
+                    ChatInterface server = null;
+                    ChatInterface client = null;
+                    String serverIp = "172.17.0.2";
+                    int port = 6000;
+                    Registry myReg = null;
+                    try {
+                        myReg = LocateRegistry.getRegistry(serverIp, port);
+                        server = (ChatInterface) myReg.lookup(serverName);
+                        client = server.getClients().get(clientId);
+                    } catch (RemoteException | NotBoundException e) {
+                        e.printStackTrace();
+                    }
+                    FindFriend findFriend = new FindFriend(client, server);
                     findFriend.setVisible(true);
                 }
             });

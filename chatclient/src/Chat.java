@@ -16,6 +16,9 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     public String clientId;
     private String password;
     private boolean isValidate;
+    private String friendUsername;
+    private String username;
+    private String friends;
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -110,5 +113,28 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     @Override
     public boolean getValidate() throws RemoteException {
         return this.isValidate;
+    }
+
+    @Override
+    public void setFriendToAdd(String user, String friendUsername) throws RemoteException {
+        this.friendUsername = friendUsername;
+        this.username = user;
+    }
+
+    @Override
+    public String getFriendToAdd() throws RemoteException {
+        if (this.username == null && this.friendUsername == null) {
+            return null;
+        } return this.username + ";" + this.friendUsername;
+    }
+
+    @Override
+    public void setFriends(String friends) throws RemoteException {
+        this.friends = friends;
+    }
+
+    @Override
+    public String getFriends() throws RemoteException {
+        return this.friends;
     }
 }
