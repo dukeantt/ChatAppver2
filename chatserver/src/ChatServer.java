@@ -69,6 +69,10 @@ public class ChatServer {
                                                 server.setValidate(true);
                                                 server.removeClientFromHashMap(clientId);
                                                 System.out.println("correct");
+
+                                                //GET FRIEND LIST WHEN USER LOGIN
+                                                String friendList = getUpdatedFriendList(conn, clientId);
+                                                client.setFriends(friendList);
                                             } else {
                                                 server.setValidate(false);
                                             }
@@ -137,8 +141,11 @@ public class ChatServer {
                                     System.out.println(friendId);
                                 }
 
-                                // ADD USER ID AND FRIEND IF TO FRIENDS TABLE
-                                if (userId != null) {
+                                // ADD USER ID AND FRIEND ID TO FRIENDS TABLE
+                                if (userId != null && friendId != null) {
+                                    ChatInterface client1 = server.getClients().get(userId);
+                                    ChatInterface client2 = server.getClients().get(friendId);
+                                    String friendList = null;
 
                                     // CHECK IF USER ID IS EXISTED IN FRIENDS TABLE
                                     Statement stmt3 = conn.createStatement();
@@ -147,7 +154,9 @@ public class ChatServer {
                                         // IF USER ID EXISTED -> CONCAT FRIEND ID TO FRIENDS_ID COLUMN
                                         Statement stmt4 = conn.createStatement();
                                         int rs4 = stmt4.executeUpdate("update friends set friends_id = concat(friends_id," + "\'" + friendId + ";\'" + ")" + " WHERE user_id =" + "\'" + userId + "\'");
-
+                                        // GET UPDATED USER FRIEND LIST
+                                        friendList = getUpdatedFriendList(conn, userId);
+                                        client1.setFriends(friendList);
                                         // CHECK IF FRIEND ID IS EXISTED IN TABLE
                                         Statement stmt5 = conn.createStatement();
                                         ResultSet rs5 = stmt5.executeQuery("select * from friends where user_id =" + "\'" + friendId + "\'");
@@ -155,6 +164,9 @@ public class ChatServer {
                                             // IF EXISTED -> CONCAT USER ID TO FRIENDS_ID COLUMN
                                             Statement stmt6 = conn.createStatement();
                                             int rs6 = stmt6.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
+                                            // GET UPDATED USER'S FRIEND  FRIEND LIST
+                                            friendList = getUpdatedFriendList(conn, friendId);
+                                            client2.setFriends(friendList);
                                         } else {
                                             // IF NOT EXISTED -> INSERT NEW ROW
                                             String SQL = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
@@ -163,6 +175,9 @@ public class ChatServer {
                                             preparedStatement3.setString(2, userId + ";");
                                             preparedStatement3.addBatch();
                                             preparedStatement3.executeBatch();
+                                            // GET UPDATED USER'S FRIEND  FRIEND LIST
+                                            friendList = getUpdatedFriendList(conn, friendId);
+                                            client2.setFriends(friendList);
                                         }
 
                                         // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
@@ -175,23 +190,35 @@ public class ChatServer {
                                         preparedStatement.setString(2, friendId + ";");
                                         preparedStatement.addBatch();
                                         preparedStatement.executeBatch();
+                                        // GET UPDATED USER FRIEND LIST
+                                        friendList = getUpdatedFriendList(conn, userId);
+                                        client1.setFriends(friendList);
 
-                                        // SHOULD CHECK  IF FRIEND ID EXISTED
-                                        // IF EXISTED -> CONCAT
-                                        // IF NOT -> NEW ROW
-                                        // FIX THIS NEXT TIME
-                                        PreparedStatement preparedStatement2 = conn.prepareStatement(SQL);
-                                        preparedStatement2.setString(1, friendId);
-                                        preparedStatement2.setString(2, userId + ";");
-                                        preparedStatement2.addBatch();
-                                        preparedStatement2.executeBatch();
-                                        System.out.println("add friend successfully");
-
+                                        // CHECK IF FRIEND ID IS EXISTED IN TABLE
+                                        Statement stmt7 = conn.createStatement();
+                                        ResultSet rs7 = stmt7.executeQuery("select * from friends where user_id =" + "\'" + friendId + "\'");
+                                        if (rs7.next()) {
+                                            // IF EXISTED -> CONCAT USER ID TO FRIENDS_ID COLUMN
+                                            Statement stmt8 = conn.createStatement();
+                                            int rs8 = stmt8.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
+                                            // GET UPDATED USER'S FRIEND  FRIEND LIST
+                                            friendList = getUpdatedFriendList(conn, friendId);
+                                            client2.setFriends(friendList);
+                                        } else {
+                                            PreparedStatement preparedStatement2 = conn.prepareStatement(SQL);
+                                            preparedStatement2.setString(1, friendId);
+                                            preparedStatement2.setString(2, userId + ";");
+                                            preparedStatement2.addBatch();
+                                            preparedStatement2.executeBatch();
+                                            System.out.println("add friend successfully");
+                                            // GET UPDATED USER'S FRIEND  FRIEND LIST
+                                            friendList = getUpdatedFriendList(conn, friendId);
+                                            client2.setFriends(friendList);
+                                        }
                                         // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
                                         server.setFriendToAdd(null, null);
                                     }
                                 }
-
                             }
                         } catch (RemoteException | SQLException | InterruptedException e) {
                             e.printStackTrace();
@@ -207,6 +234,7 @@ public class ChatServer {
             while (true) {
                 String msg = s.nextLine().trim();
                 if (server.getClients() != null) {
+
                     HashMap<String, ChatInterface> clients = server.getClients();
                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                         ChatInterface client = clientMap.getValue();
@@ -236,4 +264,15 @@ public class ChatServer {
         }
         return conn;
     }
+
+    private static String getUpdatedFriendList(Connection conn, String userId) throws SQLException {
+        String friendList = null;
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("select * from friends where user_id =" + "\'" + userId + "\'");
+        if (rs.next()) {
+            friendList = rs.getString(3);
+        }
+        return friendList;
+    }
+
 }
