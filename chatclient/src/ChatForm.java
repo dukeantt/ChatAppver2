@@ -6,12 +6,14 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+@SuppressWarnings("InfiniteLoopStatement")
+
 public class ChatForm extends JFrame {
     private JPanel panelMain;
     private JTextArea outputTextArea;
     private JTextField inputTextField;
     private JButton sendButton;
-    private JList friendList;
+    private JList<String> friendList;
     private JButton addFriendButton;
     private String clientName;
     private String serverName;
@@ -66,6 +68,35 @@ public class ChatForm extends JFrame {
             }
         };
         new Thread(r).start();
+
+        // THREAD TO GET FRIEND LIST AND UPDATE FRIEND LIST
+        Runnable updateFriendList = new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                        if (client.getIsNeedUpdateFriendList()) {
+                            System.out.println(client.getFriends());
+                            if (client.getFriends() != null) {
+                                String allFriends = client.getFriends();
+                                String[] friends = allFriends.split(";");
+                                DefaultListModel<String> demoList = new DefaultListModel<String>();
+                                for (int i = 0; i < friends.length; i++) {
+                                    demoList.addElement(friends[i]);
+                                }
+                                friendList.setModel(demoList);
+
+                                client.setIsNeedUpdateFriendList(false);
+                            }
+                        }
+                    } catch (RemoteException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        new Thread(updateFriendList).start();
     }
 
     // SEND MESSAGE TO SERVER

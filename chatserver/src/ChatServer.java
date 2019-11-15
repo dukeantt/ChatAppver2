@@ -37,8 +37,8 @@ public class ChatServer {
                     while (true) {
                         try {
                             Thread.sleep(1000);
-//                            System.out.println(server.getClientsToValidate().size());
                             if (server.getClientsToValidate().size() != 0) {
+                                System.out.println("validate user");
                                 HashMap<String, ChatInterface> clients = server.getClientsToValidate();
                                 for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                     try {
@@ -68,11 +68,13 @@ public class ChatServer {
                                             if (password.equals(passwordInDb)) {
                                                 server.setValidate(true);
                                                 server.removeClientFromHashMap(clientId);
-                                                System.out.println("correct");
 
                                                 //GET FRIEND LIST WHEN USER LOGIN
-                                                String friendList = getUpdatedFriendList(conn, clientId);
+                                                String friendList = getUpdatedFriendList(conn, clientName);
+                                                System.out.println("friend list");
+                                                System.out.println(friendList);
                                                 client.setFriends(friendList);
+                                                client.setIsNeedUpdateFriendList(true);
                                             } else {
                                                 server.setValidate(false);
                                             }
@@ -109,8 +111,8 @@ public class ChatServer {
                     while (true) {
                         try {
                             Thread.sleep(1000);
-
                             if (server.getFriendToAdd() != null) {
+                                System.out.println("handle add friend");
                                 String friendToAdd = server.getFriendToAdd();
                                 String[] addFriend = friendToAdd.split(";");
                                 String username = addFriend[0];
@@ -143,8 +145,17 @@ public class ChatServer {
 
                                 // ADD USER ID AND FRIEND ID TO FRIENDS TABLE
                                 if (userId != null && friendId != null) {
-                                    ChatInterface client1 = server.getClients().get(userId);
-                                    ChatInterface client2 = server.getClients().get(friendId);
+                                    ChatInterface client1 = null;
+                                    ChatInterface client2 = null;
+
+                                    HashMap<String, ChatInterface> clients = server.getClients();
+                                    for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                        ChatInterface client = clientMap.getValue();
+                                        if (username.equals(client.getName())) {
+                                            client1 = client;
+                                        }
+                                    }
+
                                     String friendList = null;
 
                                     // CHECK IF USER ID IS EXISTED IN FRIENDS TABLE
@@ -155,8 +166,10 @@ public class ChatServer {
                                         Statement stmt4 = conn.createStatement();
                                         int rs4 = stmt4.executeUpdate("update friends set friends_id = concat(friends_id," + "\'" + friendId + ";\'" + ")" + " WHERE user_id =" + "\'" + userId + "\'");
                                         // GET UPDATED USER FRIEND LIST
-                                        friendList = getUpdatedFriendList(conn, userId);
+                                        friendList = getUpdatedFriendList(conn, username);
+                                        client1.setIsNeedUpdateFriendList(true);
                                         client1.setFriends(friendList);
+
                                         // CHECK IF FRIEND ID IS EXISTED IN TABLE
                                         Statement stmt5 = conn.createStatement();
                                         ResultSet rs5 = stmt5.executeQuery("select * from friends where user_id =" + "\'" + friendId + "\'");
@@ -165,8 +178,9 @@ public class ChatServer {
                                             Statement stmt6 = conn.createStatement();
                                             int rs6 = stmt6.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
-                                            friendList = getUpdatedFriendList(conn, friendId);
-                                            client2.setFriends(friendList);
+                                            friendList = getUpdatedFriendList(conn, friendName);
+//                                            client2.setIsNeedUpdateFriendList(true);
+//                                            client2.setFriends(friendList);
                                         } else {
                                             // IF NOT EXISTED -> INSERT NEW ROW
                                             String SQL = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
@@ -176,8 +190,9 @@ public class ChatServer {
                                             preparedStatement3.addBatch();
                                             preparedStatement3.executeBatch();
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
-                                            friendList = getUpdatedFriendList(conn, friendId);
-                                            client2.setFriends(friendList);
+                                            friendList = getUpdatedFriendList(conn, friendName);
+//                                            client2.setIsNeedUpdateFriendList(true);
+//                                            client2.setFriends(friendList);
                                         }
 
                                         // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
@@ -191,7 +206,8 @@ public class ChatServer {
                                         preparedStatement.addBatch();
                                         preparedStatement.executeBatch();
                                         // GET UPDATED USER FRIEND LIST
-                                        friendList = getUpdatedFriendList(conn, userId);
+                                        friendList = getUpdatedFriendList(conn, username);
+                                        client1.setIsNeedUpdateFriendList(true);
                                         client1.setFriends(friendList);
 
                                         // CHECK IF FRIEND ID IS EXISTED IN TABLE
@@ -202,8 +218,9 @@ public class ChatServer {
                                             Statement stmt8 = conn.createStatement();
                                             int rs8 = stmt8.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
-                                            friendList = getUpdatedFriendList(conn, friendId);
-                                            client2.setFriends(friendList);
+                                            friendList = getUpdatedFriendList(conn, friendName);
+//                                            client2.setIsNeedUpdateFriendList(true);
+//                                            client2.setFriends(friendList);
                                         } else {
                                             PreparedStatement preparedStatement2 = conn.prepareStatement(SQL);
                                             preparedStatement2.setString(1, friendId);
@@ -212,8 +229,9 @@ public class ChatServer {
                                             preparedStatement2.executeBatch();
                                             System.out.println("add friend successfully");
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
-                                            friendList = getUpdatedFriendList(conn, friendId);
-                                            client2.setFriends(friendList);
+                                            friendList = getUpdatedFriendList(conn, friendName);
+//                                            client2.setIsNeedUpdateFriendList(true);
+//                                            client2.setFriends(friendList);
                                         }
                                         // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
                                         server.setFriendToAdd(null, null);
@@ -265,12 +283,18 @@ public class ChatServer {
         return conn;
     }
 
-    private static String getUpdatedFriendList(Connection conn, String userId) throws SQLException {
+    private static String getUpdatedFriendList(Connection conn, String username) throws SQLException {
         String friendList = null;
+        String userId = null;
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("select * from friends where user_id =" + "\'" + userId + "\'");
-        if (rs.next()) {
-            friendList = rs.getString(3);
+        Statement stmt1 = conn.createStatement();
+        ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + username + "\'");
+        if (rs1.next()) {
+            userId = rs1.getString(4);
+            ResultSet rs = stmt.executeQuery("select * from friends where user_id =" + "\'" + userId + "\'");
+            if (rs.next()) {
+                friendList = rs.getString(3);
+            }
         }
         return friendList;
     }

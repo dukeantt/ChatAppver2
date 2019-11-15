@@ -19,6 +19,7 @@ public class Chat implements ChatInterface {
     private String friendUsername;
     private String username;
     private String friends;
+    private boolean isNeedUpdateFriendList;
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -137,5 +138,15 @@ public class Chat implements ChatInterface {
     @Override
     public String getFriends() throws RemoteException {
         return this.friends;
+    }
+
+    @Override
+    public void setIsNeedUpdateFriendList(boolean isNeedUpdateFriendList) throws RemoteException {
+        this.isNeedUpdateFriendList = isNeedUpdateFriendList;
+    }
+
+    @Override
+    public boolean getIsNeedUpdateFriendList() throws RemoteException {
+        return this.isNeedUpdateFriendList;
     }
 }

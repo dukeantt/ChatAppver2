@@ -15,7 +15,7 @@ public class FindFriend extends JFrame {
         add(panelMain);
         setTitle("Find more friends");
         setSize(250, 100);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         this.server = server;
         this.client = client;

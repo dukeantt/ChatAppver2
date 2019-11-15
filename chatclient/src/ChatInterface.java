@@ -47,4 +47,8 @@ public interface ChatInterface extends Remote {
     public void setFriends(String friends) throws RemoteException;
 
     public String getFriends() throws RemoteException;
+
+    public void setIsNeedUpdateFriendList(boolean isNeedUpdateFriendList) throws RemoteException;
+
+    public boolean getIsNeedUpdateFriendList() throws RemoteException;
 }
