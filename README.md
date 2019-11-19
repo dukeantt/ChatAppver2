@@ -12,3 +12,6 @@ Step 3: use command "./runserver"
 ### Step to start client
 Step 1: Open folder chatclient with your IDE
 Step 2: Run project
+
+
+### Database: chatapp.sql
