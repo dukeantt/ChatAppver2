@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.xml.transform.Result;
 import java.rmi.ConnectException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -18,8 +19,6 @@ public class ChatServer {
             System.setProperty("java.security.policy", "server.policy");
             System.setSecurityManager(new SecurityManager());
         }
-
-
         try {
             String name = "RMIchatapp";
             int port = 6000;
@@ -98,6 +97,7 @@ public class ChatServer {
                             }
                         } catch (RemoteException | SQLException | InterruptedException e) {
                             e.printStackTrace();
+                            break;
                         }
                     }
                 }
@@ -155,9 +155,7 @@ public class ChatServer {
                                             client1 = client;
                                         }
                                     }
-
                                     String friendList = null;
-
                                     // CHECK IF USER ID IS EXISTED IN FRIENDS TABLE
                                     Statement stmt3 = conn.createStatement();
                                     ResultSet rs3 = stmt3.executeQuery("select * from friends where user_id =" + "\'" + userId + "\'");
@@ -237,6 +235,8 @@ public class ChatServer {
                                         server.setFriendToAdd(null, null);
                                     }
                                 }
+                                // close connection
+                                conn.close();
                             }
                         } catch (RemoteException | SQLException | InterruptedException e) {
                             e.printStackTrace();
@@ -247,6 +247,126 @@ public class ChatServer {
             };
             new Thread(addFriend).start();
 
+            //THREAD TO HANDLE SEND DIRECT MESSAGE BETWEEN CLIENTS
+            Runnable clientsSendMessageToEachOther = new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            Thread.sleep(1000);
+                            boolean isNewMessage = false;
+
+                            //CONNECT TO DATABASE
+                            String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
+                            String USER_NAME = "root";
+                            String PASSWORD = "1";
+                            Connection conn = null;
+                            conn = getConnection(DB_URL, USER_NAME, PASSWORD);
+                            if (server.getClients() != null) {
+                                HashMap<String, ChatInterface> clients = server.getClients();
+                                if (clients.size() != 0) {
+                                    for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                        ChatInterface client = clientMap.getValue();
+                                        if (client.getDirectMessage() != null) {
+                                            String[] directMessage = client.getDirectMessage().split(";");
+                                            String senderName = directMessage[0];
+                                            String receiverId = directMessage[1];
+                                            String message = directMessage[2];
+                                            String senderId = null;
+                                            message = "[" + senderName + "]: " + message;
+                                            Statement stmt1 = conn.createStatement();
+                                            ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + senderName + "\'");
+                                            if (rs1.next()) {
+                                                senderId = rs1.getString(4);
+                                            }
+                                            isNewMessage = server.getIsNewMessage();
+                                            if (senderId != null && isNewMessage) {
+                                                Statement stmt = conn.createStatement();
+                                                // CHECK IF SENDER ID RECEIVER ID EXIST IN DATABASE
+                                                ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + senderId + "\'" + "or receiver_id =" + "\'" + senderId + "\'");
+                                                // IF EXISTED -> UPDATE
+                                                if (rs.next()) {
+                                                    Statement stmt2 = conn.createStatement();
+                                                    int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + senderId + "\'" + "or receiver_id=" + "\'" + senderId + "\'");
+                                                    server.setIsNewMessage(false);
+                                                } else {
+                                                    // IF NOT -> CREATE NEW ROW
+                                                    String SQL = "INSERT INTO messages(message,sender_id,receiver_id) " + "VALUES(?,?,?)";
+                                                    PreparedStatement preparedStatement = conn.prepareStatement(SQL);
+                                                    preparedStatement.setString(1, message + ";");
+                                                    preparedStatement.setString(2, senderId);
+                                                    preparedStatement.setString(3, receiverId);
+                                                    preparedStatement.addBatch();
+                                                    preparedStatement.executeBatch();
+                                                    server.setIsNewMessage(false);
+                                                }
+                                            }
+                                            ChatInterface receiver = server.getClientById(receiverId);
+                                            if (receiver != null) {
+                                                receiver.setDirectMessage(senderId, receiverId, message);
+                                                receiver.setIsNewMessageFromFriend(true);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // close connection
+                            conn.close();
+                        } catch (RemoteException | SQLException | InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
+                }
+            };
+            new Thread(clientsSendMessageToEachOther).start();
+
+            //THREAD TO UPDATED OUTPUT TEXT WHEN SELECT FRIEND IN FRIEND LIST
+            Runnable updateOutputText = new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+//                            Thread.sleep(1000);
+                            //CONNECT TO DATABASE
+                            String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
+                            String USER_NAME = "root";
+                            String PASSWORD = "1";
+                            Connection conn = null;
+                            conn = getConnection(DB_URL, USER_NAME, PASSWORD);
+                            if (server.getClients() != null) {
+                                HashMap<String, ChatInterface> clients = server.getClients();
+                                for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                    ChatInterface client = clientMap.getValue();
+                                    boolean isNeedUpdateOutputText = client.getIsNeedUpdateOutputText();
+                                    if (isNeedUpdateOutputText) {
+                                        String clientName = client.getName();
+                                        String clientId = getUserIdByName(conn, clientName);
+                                        String friendId = client.getSelectedFriendId();
+                                        Statement stmt = conn.createStatement();
+                                        ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + clientId + "\'" + "or receiver_id =" + "\'" + clientId + "\'");
+                                        if (rs.next()) {
+                                            String senderId = rs.getString(3);
+                                            String receiverId = rs.getString(4);
+                                            if (friendId.equals(senderId) || friendId.equals(receiverId)) {
+                                                String message = rs.getString(2);
+                                                client.setUpdateOutputText(message);
+//                                            client.setIsNeedUpdateOutputText(false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // close connection
+                            conn.close();
+                        } catch (RemoteException | SQLException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
+                }
+            };
+            new Thread(updateOutputText).start();
             //SEND MESSAGE TO ALL CLIENT
             Scanner s = new Scanner(System.in);
             while (true) {
@@ -265,17 +385,14 @@ public class ChatServer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
-    private static Connection getConnection(String dbURL, String userName,
-                                            String password) {
+    private static Connection getConnection(String dbURL, String userName, String password) {
         Connection conn = null;
         try {
             Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection(dbURL, userName, password);
-            System.out.println("connect successfully!");
+//            System.out.println("connect successfully!");
         } catch (Exception ex) {
             System.out.println("connect failure!");
             ex.printStackTrace();
@@ -299,4 +416,13 @@ public class ChatServer {
         return friendList;
     }
 
+    private static String getUserIdByName(Connection conn, String username) throws SQLException {
+        Statement stmt = conn.createStatement();
+        String userId = null;
+        ResultSet rs1 = stmt.executeQuery("select * from users where username =" + "\'" + username + "\'");
+        if (rs1.next()) {
+            userId = rs1.getString(4);
+        }
+        return userId;
+    }
 }

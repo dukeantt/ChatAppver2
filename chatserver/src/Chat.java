@@ -20,6 +20,11 @@ public class Chat implements ChatInterface {
     private String username;
     private String friends;
     private boolean isNeedUpdateFriendList;
+    private String directMessage;
+    private boolean isNewMessageFromFriend;
+    private boolean isNeedUpdateOutputText;
+    private String friendId;
+    private String updateOutputText;
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -68,6 +73,17 @@ public class Chat implements ChatInterface {
     @Override
     public boolean getIsNewMessage() throws RemoteException {
         return this.isNewMessage;
+    }
+
+    @Override
+    public void setIsNewMessageFromFriend(boolean i) throws RemoteException {
+        this.isNewMessageFromFriend = i;
+
+    }
+
+    @Override
+    public boolean getIsNewMessageFromFriend() throws RemoteException {
+        return this.isNewMessageFromFriend;
     }
 
     @Override
@@ -148,5 +164,45 @@ public class Chat implements ChatInterface {
     @Override
     public boolean getIsNeedUpdateFriendList() throws RemoteException {
         return this.isNeedUpdateFriendList;
+    }
+
+    @Override
+    public void setDirectMessage(String sender, String receiverId, String msg) throws RemoteException {
+        this.directMessage = sender + ";" + receiverId + ";" + msg;
+    }
+
+    @Override
+    public String getDirectMessage() throws RemoteException {
+        return this.directMessage;
+    }
+
+    @Override
+    public void setIsNeedUpdateOutputText(boolean i) throws RemoteException {
+        this.isNeedUpdateOutputText = i;
+    }
+
+    @Override
+    public boolean getIsNeedUpdateOutputText() throws RemoteException {
+        return this.isNeedUpdateOutputText;
+    }
+
+    @Override
+    public void setSelectedFriendId(String friendId) throws RemoteException {
+        this.friendId = friendId;
+    }
+
+    @Override
+    public String getSelectedFriendId() throws RemoteException {
+        return this.friendId;
+    }
+
+    @Override
+    public void setUpdateOutputText(String message) throws RemoteException {
+        this.updateOutputText = message;
+    }
+
+    @Override
+    public String getUpdateOutputText() throws RemoteException {
+        return this.updateOutputText;
     }
 }
