@@ -16,6 +16,8 @@ public interface ChatInterface extends Remote {
 
     public HashMap<String, ChatInterface> getClients() throws RemoteException;
 
+    public void removeClients(String clientId) throws RemoteException;
+
     public ChatInterface getClientById(String clientId) throws RemoteException;
 
     public void setIsNewMessage(boolean i) throws RemoteException;

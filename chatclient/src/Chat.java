@@ -56,6 +56,11 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     }
 
     @Override
+    public void removeClients(String clientId) throws RemoteException {
+        this.clientsMap.remove(clientId);
+    }
+
+    @Override
     public ChatInterface getClientById(String clientId) throws RemoteException {
         return this.clientsMap.get(clientId);
     }

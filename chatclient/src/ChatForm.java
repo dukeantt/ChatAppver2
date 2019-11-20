@@ -3,6 +3,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -31,6 +33,29 @@ public class ChatForm extends JFrame {
         setSize(640, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+
+                try {
+                    String clientId = client.getClientId();
+                    server.removeClients(clientId);
+                    String message = " Really Quit ? ";
+                    String title = "Quit ???";
+                    int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
+                    if (reply == JOptionPane.YES_OPTION)
+                    {
+                        System.exit(0);
+                    }else {
+                        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+                        server.setClients(clientId,client);
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         //ADD FRIEND
         addFriendButton.addActionListener(openFindFriendWindow);
@@ -134,7 +159,7 @@ public class ChatForm extends JFrame {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-//                        System.out.println(client.getIsNeedUpdateOutputText());
+                        System.out.println(client.getIsNeedUpdateOutputText());
                         if (client.getIsNeedUpdateOutputText()) {
                             if (client.getUpdateOutputText() != null) {
                                 String[] message = client.getUpdateOutputText().split(";");

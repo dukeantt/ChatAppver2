@@ -70,8 +70,6 @@ public class ChatServer {
 
                                                 //GET FRIEND LIST WHEN USER LOGIN
                                                 String friendList = getUpdatedFriendList(conn, clientName);
-                                                System.out.println("friend list");
-                                                System.out.println(friendList);
                                                 client.setFriends(friendList);
                                                 client.setIsNeedUpdateFriendList(true);
                                             } else {
@@ -264,9 +262,12 @@ public class ChatServer {
                             conn = getConnection(DB_URL, USER_NAME, PASSWORD);
                             if (server.getClients() != null) {
                                 HashMap<String, ChatInterface> clients = server.getClients();
+//                                System.out.println(clients.size());
+                                Thread.sleep(1000);
                                 if (clients.size() != 0) {
                                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                         ChatInterface client = clientMap.getValue();
+//                                        System.out.println(clientMap.getValue().getClientId());
                                         if (client.getDirectMessage() != null) {
                                             String[] directMessage = client.getDirectMessage().split(";");
                                             String senderName = directMessage[0];
