@@ -253,7 +253,6 @@ public class ChatServer {
                         try {
                             Thread.sleep(1000);
                             boolean isNewMessage = false;
-
                             //CONNECT TO DATABASE
                             String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
                             String USER_NAME = "root";
@@ -262,12 +261,10 @@ public class ChatServer {
                             conn = getConnection(DB_URL, USER_NAME, PASSWORD);
                             if (server.getClients() != null) {
                                 HashMap<String, ChatInterface> clients = server.getClients();
-//                                System.out.println(clients.size());
                                 Thread.sleep(1000);
                                 if (clients.size() != 0) {
                                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                         ChatInterface client = clientMap.getValue();
-//                                        System.out.println(clientMap.getValue().getClientId());
                                         if (client.getDirectMessage() != null) {
                                             String[] directMessage = client.getDirectMessage().split(";");
                                             String senderName = directMessage[0];
@@ -286,11 +283,28 @@ public class ChatServer {
                                                 // CHECK IF SENDER ID RECEIVER ID EXIST IN DATABASE
                                                 ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + senderId + "\'" + "or receiver_id =" + "\'" + senderId + "\'");
                                                 // IF EXISTED -> UPDATE
-                                                if (rs.next()) {
-                                                    Statement stmt2 = conn.createStatement();
-                                                    int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + senderId + "\'" + "or receiver_id=" + "\'" + senderId + "\'");
-                                                    server.setIsNewMessage(false);
-                                                } else {
+                                                boolean isExistedInDb = false;
+                                                while (rs.next()) {
+                                                    String dbSenderId = rs.getString(3);
+                                                    String dbReceiverId = rs.getString(4);
+                                                    System.out.println(receiverId);
+                                                    System.out.println(dbSenderId);
+                                                    System.out.println(dbReceiverId);
+                                                    if (receiverId.equals(dbSenderId)) {
+                                                        System.out.println("receiver id = dbsenderid");
+                                                        Statement stmt2 = conn.createStatement();
+                                                        int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'" + "AND receiver_id=" + "\'" + senderId + "\'");
+                                                        server.setIsNewMessage(false);
+                                                        isExistedInDb = true;
+                                                    } else if (receiverId.equals(dbReceiverId)) {
+                                                        System.out.println("receiver id = dbReceiverId");
+                                                        Statement stmt2 = conn.createStatement();
+                                                        int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + senderId + "\'" + "AND receiver_id=" + "\'" + receiverId + "\'");
+                                                        server.setIsNewMessage(false);
+                                                        isExistedInDb = true;
+                                                    }
+                                                }
+                                                if (!isExistedInDb) {
                                                     // IF NOT -> CREATE NEW ROW
                                                     String SQL = "INSERT INTO messages(message,sender_id,receiver_id) " + "VALUES(?,?,?)";
                                                     PreparedStatement preparedStatement = conn.prepareStatement(SQL);
@@ -346,7 +360,7 @@ public class ChatServer {
                                         String friendId = client.getSelectedFriendId();
                                         Statement stmt = conn.createStatement();
                                         ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + clientId + "\'" + "or receiver_id =" + "\'" + clientId + "\'");
-                                        if (rs.next()) {
+                                        while (rs.next()) {
                                             String senderId = rs.getString(3);
                                             String receiverId = rs.getString(4);
                                             if (friendId.equals(senderId) || friendId.equals(receiverId)) {
