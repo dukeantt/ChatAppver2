@@ -272,10 +272,7 @@ public class ChatServer {
                                                 membersId.append(memberId).append(";");
                                             }
                                             String clientId = getUserIdByName(conn, client.getName());
-                                            System.out.println("aloa?DAS?DSD?");
                                             membersId.append(clientId).append(";");
-                                            System.out.println(clientId);
-                                            System.out.println(membersId.toString());
                                             //ADD TO MESSAGES TABLE
                                             String SQL = "INSERT INTO messages(message,sender_id,receiver_id) " + "VALUES(?,?,?)";
                                             PreparedStatement preparedStatement = conn.prepareStatement(SQL);
@@ -353,49 +350,75 @@ public class ChatServer {
                                             String message = directMessage[2];
                                             String senderId = null;
                                             message = "[" + senderName + "]: " + message;
-                                            Statement stmt1 = conn.createStatement();
-                                            ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + senderName + "\'");
-                                            if (rs1.next()) {
-                                                senderId = rs1.getString(4);
-                                            }
-                                            isNewMessage = server.getIsNewMessage();
-                                            if (senderId != null && isNewMessage) {
+                                            if (receiverId.contains("group:")) {
+                                                // RECEIVER ID = GROUP NAME AND IN MESSAGES TABLE GROUP NAME IS ALWAYS IN SENDER ID COLUMN
+                                                // SAVE MESSAGE TO DB
                                                 Statement stmt = conn.createStatement();
-                                                // CHECK IF SENDER ID RECEIVER ID EXIST IN DATABASE
-                                                ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + senderId + "\'" + "or receiver_id =" + "\'" + senderId + "\'");
-                                                // IF EXISTED -> UPDATE
-                                                boolean isExistedInDb = false;
-                                                while (rs.next()) {
-                                                    String dbSenderId = rs.getString(3);
-                                                    String dbReceiverId = rs.getString(4);
-                                                    if (receiverId.equals(dbSenderId)) {
-                                                        Statement stmt2 = conn.createStatement();
-                                                        int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'" + "AND receiver_id=" + "\'" + senderId + "\'");
-                                                        server.setIsNewMessage(false);
-                                                        isExistedInDb = true;
-                                                    } else if (receiverId.equals(dbReceiverId)) {
-                                                        Statement stmt2 = conn.createStatement();
-                                                        int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + senderId + "\'" + "AND receiver_id=" + "\'" + receiverId + "\'");
-                                                        server.setIsNewMessage(false);
-                                                        isExistedInDb = true;
+                                                ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + receiverId + "\'");
+                                                isNewMessage = server.getIsNewMessage();
+                                                if (rs.next() && isNewMessage) {
+                                                    System.out.println("groupy");
+                                                    Statement stmt2 = conn.createStatement();
+                                                    int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'");
+                                                    server.setIsNewMessage(false);
+                                                    //send message to other member
+                                                    String[] members = rs.getString(4).split(";");
+                                                    senderId = getUserIdByName(conn, senderName);
+                                                    for (int i = 0; i < members.length; i++) {
+                                                        if (!members[i].equals(senderId)) {
+                                                            ChatInterface receiver = server.getClientById(members[i]);
+                                                            if (receiver != null) {
+                                                                receiver.setDirectMessage(senderId, receiverId, message);
+                                                                receiver.setIsNewMessageFromFriend(true);
+                                                            }
+                                                        }
                                                     }
                                                 }
-                                                if (!isExistedInDb) {
-                                                    // IF NOT -> CREATE NEW ROW
-                                                    String SQL = "INSERT INTO messages(message,sender_id,receiver_id) " + "VALUES(?,?,?)";
-                                                    PreparedStatement preparedStatement = conn.prepareStatement(SQL);
-                                                    preparedStatement.setString(1, message + ";");
-                                                    preparedStatement.setString(2, senderId);
-                                                    preparedStatement.setString(3, receiverId);
-                                                    preparedStatement.addBatch();
-                                                    preparedStatement.executeBatch();
-                                                    server.setIsNewMessage(false);
+                                            } else {
+                                                Statement stmt1 = conn.createStatement();
+                                                ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + senderName + "\'");
+                                                if (rs1.next()) {
+                                                    senderId = rs1.getString(4);
                                                 }
-                                            }
-                                            ChatInterface receiver = server.getClientById(receiverId);
-                                            if (receiver != null) {
-                                                receiver.setDirectMessage(senderId, receiverId, message);
-                                                receiver.setIsNewMessageFromFriend(true);
+                                                isNewMessage = server.getIsNewMessage();
+                                                if (senderId != null && isNewMessage) {
+                                                    Statement stmt = conn.createStatement();
+                                                    // CHECK IF SENDER ID RECEIVER ID EXIST IN DATABASE
+                                                    ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + senderId + "\'" + "or receiver_id =" + "\'" + senderId + "\'");
+                                                    // IF EXISTED -> UPDATE
+                                                    boolean isExistedInDb = false;
+                                                    while (rs.next()) {
+                                                        String dbSenderId = rs.getString(3);
+                                                        String dbReceiverId = rs.getString(4);
+                                                        if (receiverId.equals(dbSenderId)) {
+                                                            Statement stmt2 = conn.createStatement();
+                                                            int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'" + "AND receiver_id=" + "\'" + senderId + "\'");
+                                                            server.setIsNewMessage(false);
+                                                            isExistedInDb = true;
+                                                        } else if (receiverId.equals(dbReceiverId)) {
+                                                            Statement stmt2 = conn.createStatement();
+                                                            int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + senderId + "\'" + "AND receiver_id=" + "\'" + receiverId + "\'");
+                                                            server.setIsNewMessage(false);
+                                                            isExistedInDb = true;
+                                                        }
+                                                    }
+                                                    if (!isExistedInDb) {
+                                                        // IF NOT -> CREATE NEW ROW
+                                                        String SQL = "INSERT INTO messages(message,sender_id,receiver_id) " + "VALUES(?,?,?)";
+                                                        PreparedStatement preparedStatement = conn.prepareStatement(SQL);
+                                                        preparedStatement.setString(1, message + ";");
+                                                        preparedStatement.setString(2, senderId);
+                                                        preparedStatement.setString(3, receiverId);
+                                                        preparedStatement.addBatch();
+                                                        preparedStatement.executeBatch();
+                                                        server.setIsNewMessage(false);
+                                                    }
+                                                }
+                                                ChatInterface receiver = server.getClientById(receiverId);
+                                                if (receiver != null) {
+                                                    receiver.setDirectMessage(senderId, receiverId, message);
+                                                    receiver.setIsNewMessageFromFriend(true);
+                                                }
                                             }
                                         }
                                     }
@@ -434,15 +457,24 @@ public class ChatServer {
                                         String clientName = client.getName();
                                         String clientId = getUserIdByName(conn, clientName);
                                         String friendId = client.getSelectedFriendId();
-                                        Statement stmt = conn.createStatement();
-                                        ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + clientId + "\'" + "or receiver_id =" + "\'" + clientId + "\'");
-                                        while (rs.next()) {
-                                            String senderId = rs.getString(3);
-                                            String receiverId = rs.getString(4);
-                                            if (friendId.equals(senderId) || friendId.equals(receiverId)) {
+                                        if (friendId.contains("group:")) {
+                                            Statement stmt = conn.createStatement();
+                                            ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + friendId + "\'");
+                                            if (rs.next()) {
                                                 String message = rs.getString(2);
                                                 client.setUpdateOutputText(message);
+                                            }
+                                        } else {
+                                            Statement stmt = conn.createStatement();
+                                            ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + clientId + "\'" + "or receiver_id =" + "\'" + clientId + "\'");
+                                            while (rs.next()) {
+                                                String senderId = rs.getString(3);
+                                                String receiverId = rs.getString(4);
+                                                if (friendId.equals(senderId) || friendId.equals(receiverId)) {
+                                                    String message = rs.getString(2);
+                                                    client.setUpdateOutputText(message);
 //                                            client.setIsNeedUpdateOutputText(false);
+                                                }
                                             }
                                         }
                                     }
