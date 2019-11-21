@@ -19,6 +19,7 @@ public class ChatForm extends JFrame {
     private JButton sendButton;
     private JList<String> friendList;
     private JButton addFriendButton;
+    private JButton createGroupButton;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -57,6 +58,8 @@ public class ChatForm extends JFrame {
             }
         });
 
+        //CREATE GROUP
+        createGroupButton.addActionListener(openCreateGroupWindow);
         //ADD FRIEND
         addFriendButton.addActionListener(openFindFriendWindow);
 
@@ -130,8 +133,8 @@ public class ChatForm extends JFrame {
                 while (true) {
                     try {
                         Thread.sleep(1000);
+                        System.out.println(client.getIsNeedUpdateFriendList());
                         if (client.getIsNeedUpdateFriendList()) {
-                            System.out.println(client.getFriends());
                             if (client.getFriends() != null) {
                                 String allFriends = client.getFriends();
                                 String[] friends = allFriends.split(";");
@@ -140,7 +143,6 @@ public class ChatForm extends JFrame {
                                     demoList.addElement(friends[i]);
                                 }
                                 friendList.setModel(demoList);
-
                                 client.setIsNeedUpdateFriendList(false);
                             }
                         }
@@ -159,7 +161,6 @@ public class ChatForm extends JFrame {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        System.out.println(client.getIsNeedUpdateOutputText());
                         if (client.getIsNeedUpdateOutputText()) {
                             if (client.getUpdateOutputText() != null) {
                                 String[] message = client.getUpdateOutputText().split(";");
@@ -248,5 +249,29 @@ public class ChatForm extends JFrame {
         }
     };
 
-
+    //OPEN CREATE GROUP WINDOW
+    private ActionListener openCreateGroupWindow = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    ChatInterface server = null;
+                    ChatInterface client = null;
+                    String serverIp = "172.17.0.2";
+                    int port = 6000;
+                    Registry myReg = null;
+                    try {
+                        myReg = LocateRegistry.getRegistry(serverIp, port);
+                        server = (ChatInterface) myReg.lookup(serverName);
+                        client = server.getClients().get(clientId);
+                    } catch (RemoteException | NotBoundException e) {
+                        e.printStackTrace();
+                    }
+                    CreateGroup createGroup = new CreateGroup(client, server);
+                    createGroup.setVisible(true);
+                }
+            });
+        }
+    };
 }
