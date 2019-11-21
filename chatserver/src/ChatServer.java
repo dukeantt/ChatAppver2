@@ -130,7 +130,6 @@ public class ChatServer {
                                 ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + username + "\'");
                                 if (rs1.next()) {
                                     userId = rs1.getString(4);
-                                    System.out.println(userId);
                                 }
 
                                 // GET FRIEND ID
@@ -138,7 +137,6 @@ public class ChatServer {
                                 ResultSet rs2 = stmt2.executeQuery("select * from users where username =" + "\'" + friendName + "\'");
                                 if (rs2.next()) {
                                     friendId = rs2.getString(4);
-                                    System.out.println(friendId);
                                 }
 
                                 // ADD USER ID AND FRIEND ID TO FRIENDS TABLE
@@ -245,6 +243,89 @@ public class ChatServer {
             };
             new Thread(addFriend).start();
 
+            //THREAD TO HANDLE CREATE GROUP
+            Runnable createGroup = new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            Thread.sleep(1000);
+                            String friendList = null;
+                            //CONNECT TO DATABASE
+                            String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
+                            String USER_NAME = "root";
+                            String PASSWORD = "1";
+                            Connection conn = null;
+                            conn = getConnection(DB_URL, USER_NAME, PASSWORD);
+                            if (server.getClients() != null) {
+                                HashMap<String, ChatInterface> clients = server.getClients();
+                                for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                    ChatInterface client = clientMap.getValue();
+                                    if (client.getIsNewGroup()) {
+                                        if (client.getGroup() != null) {
+                                            String[] group = client.getGroup().split("``");
+                                            String groupName = group[0];
+                                            StringBuilder membersId = new StringBuilder();
+                                            String[] membersNameArray = group[1].split(";");
+                                            for (int i = 0; i < membersNameArray.length; i++) {
+                                                String memberId = getUserIdByName(conn, membersNameArray[i]);
+                                                membersId.append(memberId).append(";");
+                                            }
+                                            String clientId = getUserIdByName(conn, client.getName());
+                                            System.out.println("aloa?DAS?DSD?");
+                                            membersId.append(clientId).append(";");
+                                            System.out.println(clientId);
+                                            System.out.println(membersId.toString());
+                                            //ADD TO MESSAGES TABLE
+                                            String SQL = "INSERT INTO messages(message,sender_id,receiver_id) " + "VALUES(?,?,?)";
+                                            PreparedStatement preparedStatement = conn.prepareStatement(SQL);
+                                            preparedStatement.setString(1, "");
+                                            preparedStatement.setString(2, "group:" + groupName);
+                                            preparedStatement.setString(3, membersId.toString());
+                                            preparedStatement.addBatch();
+                                            preparedStatement.executeBatch();
+                                            client.setIsNewGroup(false);
+
+                                            //ADD TO FRIENDS TABLE
+                                            //IF EXISTED -> CONCAT
+                                            String[] membersIdArray = membersId.toString().split(";");
+                                            for (int j = 0; j < membersIdArray.length; j++) {
+                                                String userId = membersIdArray[j];
+                                                Statement stmt = conn.createStatement();
+                                                ResultSet rs = stmt.executeQuery("select * from friends where user_id =" + "\'" + userId + "\'");
+                                                if (rs.next()) {
+                                                    Statement stmt2 = conn.createStatement();
+                                                    int rs2 = stmt2.executeUpdate("update friends set friends_id = concat(friends_id," + "\'group:" + groupName + ";\'" + ")" + " WHERE user_id =" + "\'" + userId + "\'");
+                                                    client.setIsNeedUpdateFriendList(true);
+                                                    friendList = getUpdatedFriendList(conn, client.getName());
+                                                    client.setFriends(friendList);
+                                                } else {
+                                                    String SQL2 = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
+                                                    PreparedStatement preparedStatement2 = conn.prepareStatement(SQL2);
+                                                    preparedStatement2.setString(1, userId);
+                                                    preparedStatement2.setString(2, "group:" + groupName + ";");
+                                                    preparedStatement2.addBatch();
+                                                    preparedStatement2.executeBatch();
+                                                    client.setIsNeedUpdateFriendList(true);
+                                                    friendList = getUpdatedFriendList(conn, client.getName());
+                                                    client.setFriends(friendList);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // close connection
+                            conn.close();
+                        } catch (RemoteException | InterruptedException | SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            };
+            new Thread(createGroup).start();
+
             //THREAD TO HANDLE SEND DIRECT MESSAGE BETWEEN CLIENTS
             Runnable clientsSendMessageToEachOther = new Runnable() {
                 @Override
@@ -261,7 +342,7 @@ public class ChatServer {
                             conn = getConnection(DB_URL, USER_NAME, PASSWORD);
                             if (server.getClients() != null) {
                                 HashMap<String, ChatInterface> clients = server.getClients();
-                                Thread.sleep(1000);
+//                                Thread.sleep(1000);
                                 if (clients.size() != 0) {
                                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                         ChatInterface client = clientMap.getValue();
@@ -287,17 +368,12 @@ public class ChatServer {
                                                 while (rs.next()) {
                                                     String dbSenderId = rs.getString(3);
                                                     String dbReceiverId = rs.getString(4);
-                                                    System.out.println(receiverId);
-                                                    System.out.println(dbSenderId);
-                                                    System.out.println(dbReceiverId);
                                                     if (receiverId.equals(dbSenderId)) {
-                                                        System.out.println("receiver id = dbsenderid");
                                                         Statement stmt2 = conn.createStatement();
                                                         int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'" + "AND receiver_id=" + "\'" + senderId + "\'");
                                                         server.setIsNewMessage(false);
                                                         isExistedInDb = true;
                                                     } else if (receiverId.equals(dbReceiverId)) {
-                                                        System.out.println("receiver id = dbReceiverId");
                                                         Statement stmt2 = conn.createStatement();
                                                         int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + senderId + "\'" + "AND receiver_id=" + "\'" + receiverId + "\'");
                                                         server.setIsNewMessage(false);
@@ -382,6 +458,7 @@ public class ChatServer {
                 }
             };
             new Thread(updateOutputText).start();
+
             //SEND MESSAGE TO ALL CLIENT
             Scanner s = new Scanner(System.in);
             while (true) {
@@ -430,6 +507,7 @@ public class ChatServer {
         }
         return friendList;
     }
+
 
     private static String getUserIdByName(Connection conn, String username) throws SQLException {
         Statement stmt = conn.createStatement();

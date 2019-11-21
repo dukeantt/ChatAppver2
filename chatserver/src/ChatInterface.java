@@ -73,4 +73,12 @@ public interface ChatInterface extends Remote {
     public void setUpdateOutputText(String message) throws RemoteException;
 
     public String getUpdateOutputText() throws RemoteException;
+
+    public void setGroup(String groupName, String groupMembers) throws RemoteException;
+
+    public String getGroup() throws RemoteException;
+
+    public void setIsNewGroup(boolean i) throws RemoteException;
+
+    public boolean getIsNewGroup() throws RemoteException;
 }

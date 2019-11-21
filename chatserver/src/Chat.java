@@ -25,6 +25,9 @@ public class Chat implements ChatInterface {
     private boolean isNeedUpdateOutputText;
     private String friendId;
     private String updateOutputText;
+    private String groupName;
+    private String groupMembers;
+    private boolean isNewGroup;
 
     public Chat(String name) throws RemoteException {
         this.name = name;
@@ -210,4 +213,26 @@ public class Chat implements ChatInterface {
     public String getUpdateOutputText() throws RemoteException {
         return this.updateOutputText;
     }
+
+    @Override
+    public void setGroup(String groupName, String groupMembers) throws RemoteException {
+        this.groupMembers = groupMembers;
+        this.groupName = groupName;
+    }
+
+    @Override
+    public String getGroup() throws RemoteException {
+        return this.groupName + "``" + this.groupMembers;
+    }
+
+    @Override
+    public void setIsNewGroup(boolean i) throws RemoteException {
+        this.isNewGroup = i;
+    }
+
+    @Override
+    public boolean getIsNewGroup() throws RemoteException {
+        return this.isNewGroup;
+    }
+
 }
