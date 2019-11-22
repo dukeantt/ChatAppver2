@@ -176,7 +176,11 @@ public class Chat implements ChatInterface {
 
     @Override
     public void setDirectMessage(String sender, String receiverId, String msg) throws RemoteException {
-        this.directMessage = sender + ";" + receiverId + ";" + msg;
+        if (sender == null && receiverId == null && msg == null) {
+            this.directMessage = null;
+        } else {
+            this.directMessage = sender + ";" + receiverId + ";" + msg;
+        }
     }
 
     @Override
