@@ -26,6 +26,7 @@ hs_err_pid*
 chatclient/.idea/
 chatserver/.idea/
 secondclient/.idea/
+thirdclient/.idea/
 chatclient/out/
 chatserver/out/
 secondclient/out/
