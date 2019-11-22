@@ -45,12 +45,11 @@ public class ChatForm extends JFrame {
                     String message = " Really Quit ? ";
                     String title = "Quit ???";
                     int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
-                    if (reply == JOptionPane.YES_OPTION)
-                    {
+                    if (reply == JOptionPane.YES_OPTION) {
                         System.exit(0);
-                    }else {
+                    } else {
                         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                        server.setClients(clientId,client);
+                        server.setClients(clientId, client);
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -89,6 +88,9 @@ public class ChatForm extends JFrame {
                             senderId = directMessageFromFriend[0];
                             receiverId = directMessageFromFriend[1];
                             messageFromFriend = directMessageFromFriend[2];
+                            System.out.println(senderId);
+                            System.out.println(receiverId);
+                            System.out.println(messageFromFriend);
                         }
 
                         isNewMessage = client.getIsNewMessage();
@@ -100,16 +102,16 @@ public class ChatForm extends JFrame {
                     }
                     //RECEIVE MESSAGE FROM FRIEND
                     if (messageFromFriend != null && isNewMessageFromFriend) {
-                        String msg = "[" + receiverId + "]: " + messageFromFriend;
-                        outputTextArea.append("\n" + msg);
+                        outputTextArea.append("\n" + messageFromFriend);
                         try {
                             client.setIsNewMessageFromFriend(false);
+                            messageFromFriend = null;
+                            client.setDirectMessage(null, null, null);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                             break;
                         }
                     }
-
                     //RECEIVE MESSAGE FROM SERVER
                     if (messageOfServer != null && isNewMessage) {
                         String msg = "[" + serverName + "]: " + messageOfServer;
@@ -133,7 +135,7 @@ public class ChatForm extends JFrame {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        System.out.println(client.getIsNeedUpdateFriendList());
+//                        System.out.println(client.getIsNeedUpdateFriendList());
                         if (client.getIsNeedUpdateFriendList()) {
                             if (client.getFriends() != null) {
                                 String allFriends = client.getFriends();
@@ -212,6 +214,7 @@ public class ChatForm extends JFrame {
                 // SEND DIRECT MESSAGE TO FRIEND ID
                 if (friendId != null) {
                     client.setDirectMessage(client.getName(), friendId, messageInTextField);
+                    client.setIsNewMessage(true);
                     server.setIsNewMessage(true);
                 }
                 server.setMsg(messageInTextField);

@@ -337,13 +337,17 @@ public class ChatServer {
                             String PASSWORD = "1";
                             Connection conn = null;
                             conn = getConnection(DB_URL, USER_NAME, PASSWORD);
+
                             if (server.getClients() != null) {
                                 HashMap<String, ChatInterface> clients = server.getClients();
 //                                Thread.sleep(1000);
                                 if (clients.size() != 0) {
                                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                         ChatInterface client = clientMap.getValue();
-                                        if (client.getDirectMessage() != null) {
+                                        if (client.getDirectMessage() != null && client.getIsNewMessage()) {
+                                            System.out.println(client.getName());
+                                            System.out.println(clients.size());
+
                                             String[] directMessage = client.getDirectMessage().split(";");
                                             String senderName = directMessage[0];
                                             String receiverId = directMessage[1];
@@ -357,7 +361,6 @@ public class ChatServer {
                                                 ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + receiverId + "\'");
                                                 isNewMessage = server.getIsNewMessage();
                                                 if (rs.next() && isNewMessage) {
-                                                    System.out.println("groupy");
                                                     Statement stmt2 = conn.createStatement();
                                                     int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'");
                                                     server.setIsNewMessage(false);
@@ -413,11 +416,18 @@ public class ChatServer {
                                                         preparedStatement.executeBatch();
                                                         server.setIsNewMessage(false);
                                                     }
-                                                }
-                                                ChatInterface receiver = server.getClientById(receiverId);
-                                                if (receiver != null) {
-                                                    receiver.setDirectMessage(senderId, receiverId, message);
-                                                    receiver.setIsNewMessageFromFriend(true);
+                                                    //SET MESSAGE SO THAT CLIENT RECEIVER CAN GET IT FROM SERVER
+                                                    String receiverName = getUserNameById(receiverId);
+                                                    for (Map.Entry<String, ChatInterface> subclientMap : clients.entrySet()) {
+                                                        String subClientId = subclientMap.getKey();
+                                                        if (subClientId.contains(receiverName)) {
+//                                                            ChatInterface subClient = subclientMap.getValue();
+                                                            ChatInterface subClient = server.getClientById(subClientId);
+                                                            subClient.setDirectMessage(senderId, receiverId, message);
+                                                            subClient.setIsNewMessageFromFriend(true);
+                                                        }
+                                                    }
+                                                    client.setIsNewMessage(false);
                                                 }
                                             }
                                         }
@@ -441,7 +451,7 @@ public class ChatServer {
                 public void run() {
                     while (true) {
                         try {
-//                            Thread.sleep(1000);
+                            Thread.sleep(1000);
                             //CONNECT TO DATABASE
                             String DB_URL = "jdbc:mysql://172.17.0.1:3306/chatapp";
                             String USER_NAME = "root";
@@ -453,6 +463,7 @@ public class ChatServer {
                                 for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                     ChatInterface client = clientMap.getValue();
                                     boolean isNeedUpdateOutputText = client.getIsNeedUpdateOutputText();
+//                                    System.out.println(client.getName()+":"+isNeedUpdateOutputText);
                                     if (isNeedUpdateOutputText) {
                                         String clientName = client.getName();
                                         String clientId = getUserIdByName(conn, clientName);
@@ -482,7 +493,7 @@ public class ChatServer {
                             }
                             // close connection
                             conn.close();
-                        } catch (RemoteException | SQLException e) {
+                        } catch (RemoteException | SQLException | InterruptedException e) {
                             e.printStackTrace();
                             break;
                         }
@@ -549,5 +560,9 @@ public class ChatServer {
             userId = rs1.getString(4);
         }
         return userId;
+    }
+
+    private static String getUserNameById(String id) {
+        return id.split("_")[0];
     }
 }
