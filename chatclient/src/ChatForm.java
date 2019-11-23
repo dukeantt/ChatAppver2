@@ -20,6 +20,8 @@ public class ChatForm extends JFrame {
     private JList<String> friendList;
     private JButton addFriendButton;
     private JButton createGroupButton;
+    private JScrollPane scrollPane;
+    JScrollBar vertical;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -30,6 +32,7 @@ public class ChatForm extends JFrame {
         add(panelMain);
         getRootPane().setDefaultButton(sendButton);
         outputTextArea.setEditable(false);
+        vertical = scrollPane.getVerticalScrollBar();
         setTitle("Simple chat app");
         setSize(640, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -45,12 +48,11 @@ public class ChatForm extends JFrame {
                     String message = " Really Quit ? ";
                     String title = "Quit ???";
                     int reply = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
-                    if (reply == JOptionPane.YES_OPTION)
-                    {
+                    if (reply == JOptionPane.YES_OPTION) {
                         System.exit(0);
-                    }else {
+                    } else {
                         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-                        server.setClients(clientId,client);
+                        server.setClients(clientId, client);
                     }
                 } catch (RemoteException e) {
                     e.printStackTrace();
@@ -104,7 +106,7 @@ public class ChatForm extends JFrame {
                         try {
                             client.setIsNewMessageFromFriend(false);
                             messageFromFriend = null;
-                            client.setDirectMessage(null,null,null);
+                            client.setDirectMessage(null, null, null);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                             break;
@@ -121,6 +123,7 @@ public class ChatForm extends JFrame {
                             break;
                         }
                     }
+                    vertical.setValue(vertical.getMaximum());
                 }
             }
         };
@@ -220,6 +223,7 @@ public class ChatForm extends JFrame {
             } catch (RemoteException | NotBoundException e) {
                 e.printStackTrace();
             }
+            vertical.setValue(vertical.getMaximum());
         }
     };
 
