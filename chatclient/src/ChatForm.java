@@ -89,9 +89,6 @@ public class ChatForm extends JFrame {
                             senderId = directMessageFromFriend[0];
                             receiverId = directMessageFromFriend[1];
                             messageFromFriend = directMessageFromFriend[2];
-                            System.out.println(senderId);
-                            System.out.println(receiverId);
-                            System.out.println(messageFromFriend);
                         }
 
                         isNewMessage = client.getIsNewMessage();
@@ -136,7 +133,6 @@ public class ChatForm extends JFrame {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-//                        System.out.println(client.getIsNeedUpdateFriendList());
                         if (client.getIsNeedUpdateFriendList()) {
                             if (client.getFriends() != null) {
                                 String allFriends = client.getFriends();
@@ -214,7 +210,6 @@ public class ChatForm extends JFrame {
 
                 // SEND DIRECT MESSAGE TO FRIEND ID
                 if (friendId != null) {
-                    System.out.println(friendId);
                     client.setDirectMessage(client.getName(), friendId, messageInTextField);
                     client.setIsNewMessage(true);
                     server.setIsNewMessage(true);
