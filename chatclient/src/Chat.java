@@ -175,6 +175,9 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
 
     @Override
     public void setDirectMessage(String sender, String receiverId, String msg) throws RemoteException {
+        if (msg.equals("")) {
+            msg = " ";
+        }
         if (sender == null && receiverId == null && msg == null) {
             this.directMessage = null;
         } else {
