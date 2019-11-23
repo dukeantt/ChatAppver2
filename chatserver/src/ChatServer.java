@@ -316,6 +316,7 @@ public class ChatServer {
                             conn.close();
                         } catch (RemoteException | InterruptedException | SQLException e) {
                             e.printStackTrace();
+                            break;
                         }
                     }
 
@@ -345,8 +346,6 @@ public class ChatServer {
                                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                         ChatInterface client = clientMap.getValue();
                                         if (client.getDirectMessage() != null && client.getIsNewMessage()) {
-                                            System.out.println(client.getName());
-                                            System.out.println(clients.size());
 
                                             String[] directMessage = client.getDirectMessage().split(";");
                                             String senderName = directMessage[0];
@@ -358,21 +357,26 @@ public class ChatServer {
                                                 // RECEIVER ID = GROUP NAME AND IN MESSAGES TABLE GROUP NAME IS ALWAYS IN SENDER ID COLUMN
                                                 // SAVE MESSAGE TO DB
                                                 Statement stmt = conn.createStatement();
+                                                // CHECK IF GROUP EXIST IN DATABASE
                                                 ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + receiverId + "\'");
                                                 isNewMessage = server.getIsNewMessage();
+
                                                 if (rs.next() && isNewMessage) {
                                                     Statement stmt2 = conn.createStatement();
                                                     int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'");
                                                     server.setIsNewMessage(false);
-                                                    //send message to other member
+                                                    client.setIsNewMessage(false);
+                                                    //SEND MESSAGE TO OTHERS CLIENT
                                                     String[] members = rs.getString(4).split(";");
                                                     senderId = getUserIdByName(conn, senderName);
                                                     for (int i = 0; i < members.length; i++) {
-                                                        if (!members[i].equals(senderId)) {
-                                                            ChatInterface receiver = server.getClientById(members[i]);
-                                                            if (receiver != null) {
-                                                                receiver.setDirectMessage(senderId, receiverId, message);
-                                                                receiver.setIsNewMessageFromFriend(true);
+                                                        String receiverName = getUserNameById(members[i]);
+                                                        for (Map.Entry<String, ChatInterface> subclientMap : clients.entrySet()) {
+                                                            String subClientId = subclientMap.getKey();
+                                                            if (subClientId.contains(receiverName) && !senderName.equals(receiverName)) {
+                                                                ChatInterface subClient = server.getClientById(subClientId);
+                                                                subClient.setDirectMessage(senderId, receiverId, message);
+                                                                subClient.setIsNewMessageFromFriend(true);
                                                             }
                                                         }
                                                     }
@@ -416,17 +420,20 @@ public class ChatServer {
                                                         preparedStatement.executeBatch();
                                                         server.setIsNewMessage(false);
                                                     }
-                                                    //SET MESSAGE SO THAT CLIENT RECEIVER CAN GET IT FROM SERVER
+                                                    //WHEN SENDER SEND THE MESSAGE, SET THE MESSAGE FOR RECEIVER IN SERVER
+                                                    //                    SO THAT RECEIVER CAN GET THE MESSAGE ON CHAT BOX IMMEDIATELY.
+                                                    //THE ID THAT CLIENT SENT TO SERVER WHEN LOGIN IS DIFFERENT FROM IN DATABASE SO NEED
+                                                    //                      TO GET THE NAME FROM THE ID THE CLIENT SEND TO SERVER AND THEN GET THE ID FROM DB BY NAME
                                                     String receiverName = getUserNameById(receiverId);
                                                     for (Map.Entry<String, ChatInterface> subclientMap : clients.entrySet()) {
                                                         String subClientId = subclientMap.getKey();
-                                                        if (subClientId.contains(receiverName)) {
-//                                                            ChatInterface subClient = subclientMap.getValue();
+                                                        if (subClientId.contains(receiverName) && !senderName.equals(receiverName)) {
                                                             ChatInterface subClient = server.getClientById(subClientId);
                                                             subClient.setDirectMessage(senderId, receiverId, message);
                                                             subClient.setIsNewMessageFromFriend(true);
                                                         }
                                                     }
+                                                    // SET IS NEW MESSAGE TO FALSE SO IT'S NOT BEING LOOPED FOREVER
                                                     client.setIsNewMessage(false);
                                                 }
                                             }
