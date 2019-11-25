@@ -20,6 +20,8 @@ public class ChatForm extends JFrame {
     private JList<String> friendList;
     private JButton addFriendButton;
     private JButton createGroupButton;
+    private JScrollPane scrollPane;
+    private JScrollBar vertical;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -30,6 +32,8 @@ public class ChatForm extends JFrame {
         add(panelMain);
         getRootPane().setDefaultButton(sendButton);
         outputTextArea.setEditable(false);
+//        vertical = scrollPane.getVerticalScrollBar();
+
         setTitle("Simple chat app");
         setSize(640, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -103,7 +107,7 @@ public class ChatForm extends JFrame {
                         try {
                             client.setIsNewMessageFromFriend(false);
                             messageFromFriend = null;
-                            client.setDirectMessage(null, null, null);
+//                            client.setDirectMessage(null, null, null);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                             break;
@@ -157,15 +161,16 @@ public class ChatForm extends JFrame {
             @Override
             public void run() {
                 while (true) {
+                    outputTextArea.setCaretPosition(outputTextArea.getDocument().getLength());
                     try {
                         Thread.sleep(1000);
-                        if (client.getIsNeedUpdateOutputText()) {
+                        if (client.getIsNeedUpdateOutputText() == 2) {
                             if (client.getUpdateOutputText() != null) {
                                 String[] message = client.getUpdateOutputText().split(";");
                                 for (int i = 0; i < message.length; i++) {
                                     outputTextArea.append("\n" + message[i]);
                                 }
-                                client.setIsNeedUpdateOutputText(false);
+                                client.setIsNeedUpdateOutputText(0);
                             }
                         }
                     } catch (RemoteException | InterruptedException e) {
@@ -182,11 +187,12 @@ public class ChatForm extends JFrame {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 try {
-                    client.setIsNeedUpdateOutputText(true);
+                    client.setIsNeedUpdateOutputText(1);
                     client.setUpdateOutputText("");
                     friendId = friendList.getSelectedValue();
                     client.setSelectedFriendId(friendId);
                     outputTextArea.setText("");
+
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -219,6 +225,9 @@ public class ChatForm extends JFrame {
             } catch (RemoteException | NotBoundException e) {
                 e.printStackTrace();
             }
+//            vertical.setValue(vertical.getMaximum());
+            outputTextArea.setCaretPosition(outputTextArea.getDocument().getLength());
+
         }
     };
 
