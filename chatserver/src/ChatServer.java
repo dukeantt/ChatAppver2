@@ -345,7 +345,8 @@ public class ChatServer {
                                 if (clients.size() != 0) {
                                     for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                         ChatInterface client = clientMap.getValue();
-                                        if (client.getDirectMessage() != null && client.getIsNewMessage()) {
+//                                        if (client.getDirectMessage() != null && client.getIsNewMessage()) {
+                                        if (client.getIsNewMessage()) {
 
                                             String[] directMessage = client.getDirectMessage().split(";");
                                             String senderName = directMessage[0];
@@ -363,6 +364,7 @@ public class ChatServer {
 
                                                 if (rs.next() && isNewMessage) {
                                                     Statement stmt2 = conn.createStatement();
+//                                                    System.out.println("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'");
                                                     int rs2 = stmt2.executeUpdate("update messages set message = CONCAT(message," + "\'" + message + ";\'" + ")" + " WHERE sender_id =" + "\'" + receiverId + "\'");
                                                     server.setIsNewMessage(false);
                                                     client.setIsNewMessage(false);
@@ -475,24 +477,26 @@ public class ChatServer {
                                         String clientName = client.getName();
                                         String clientId = getUserIdByName(conn, clientName);
                                         String friendId = client.getSelectedFriendId();
-                                        if (friendId.contains("group:")) {
-                                            Statement stmt = conn.createStatement();
-                                            ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + friendId + "\'");
-                                            if (rs.next()) {
-                                                String message = rs.getString(2);
-                                                client.setUpdateOutputText(message);
-                                                client.setIsNeedUpdateOutputText(2);
-                                            }
-                                        } else {
-                                            Statement stmt = conn.createStatement();
-                                            ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + clientId + "\'" + "or receiver_id =" + "\'" + clientId + "\'");
-                                            while (rs.next()) {
-                                                String senderId = rs.getString(3);
-                                                String receiverId = rs.getString(4);
-                                                if (friendId.equals(senderId) || friendId.equals(receiverId)) {
+                                        if (friendId != null) {
+                                            if (friendId.contains("group:")) {
+                                                Statement stmt = conn.createStatement();
+                                                ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + friendId + "\'");
+                                                if (rs.next()) {
                                                     String message = rs.getString(2);
                                                     client.setUpdateOutputText(message);
                                                     client.setIsNeedUpdateOutputText(2);
+                                                }
+                                            } else {
+                                                Statement stmt = conn.createStatement();
+                                                ResultSet rs = stmt.executeQuery("select * from messages where sender_id =" + "\'" + clientId + "\'" + "or receiver_id =" + "\'" + clientId + "\'");
+                                                while (rs.next()) {
+                                                    String senderId = rs.getString(3);
+                                                    String receiverId = rs.getString(4);
+                                                    if (friendId.equals(senderId) || friendId.equals(receiverId)) {
+                                                        String message = rs.getString(2);
+                                                        client.setUpdateOutputText(message);
+                                                        client.setIsNeedUpdateOutputText(2);
+                                                    }
                                                 }
                                             }
                                         }

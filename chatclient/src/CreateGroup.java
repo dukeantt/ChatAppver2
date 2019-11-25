@@ -33,8 +33,6 @@ public class CreateGroup extends JFrame {
                     try {
                         String groupName = groupNameTextField.getText();
                         String members = membersTextField.getText();
-                        System.out.println(groupName);
-                        System.out.println(members);
                         client.setGroup(groupName, members);
                         client.setIsNewGroup(true);
                     } catch (RemoteException e) {

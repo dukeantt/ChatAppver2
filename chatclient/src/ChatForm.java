@@ -21,7 +21,7 @@ public class ChatForm extends JFrame {
     private JButton addFriendButton;
     private JButton createGroupButton;
     private JScrollPane scrollPane;
-    private JScrollBar vertical;
+//    private JScrollBar vertical;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -32,7 +32,7 @@ public class ChatForm extends JFrame {
         add(panelMain);
         getRootPane().setDefaultButton(sendButton);
         outputTextArea.setEditable(false);
-        vertical = scrollPane.getVerticalScrollBar();
+//        vertical = scrollPane.getVerticalScrollBar();
 
         setTitle("Simple chat app");
         setSize(640, 480);
@@ -107,7 +107,7 @@ public class ChatForm extends JFrame {
                         try {
                             client.setIsNewMessageFromFriend(false);
                             messageFromFriend = null;
-                            client.setDirectMessage(null, null, null);
+//                            client.setDirectMessage(null, null, null);
                         } catch (RemoteException e) {
                             e.printStackTrace();
                             break;
