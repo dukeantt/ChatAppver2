@@ -21,7 +21,7 @@ public class ChatForm extends JFrame {
     private JButton addFriendButton;
     private JButton createGroupButton;
     private JScrollPane scrollPane;
-    JScrollBar vertical;
+    private JScrollBar vertical;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -33,6 +33,7 @@ public class ChatForm extends JFrame {
         getRootPane().setDefaultButton(sendButton);
         outputTextArea.setEditable(false);
         vertical = scrollPane.getVerticalScrollBar();
+
         setTitle("Simple chat app");
         setSize(640, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -123,7 +124,6 @@ public class ChatForm extends JFrame {
                             break;
                         }
                     }
-                    vertical.setValue(vertical.getMaximum());
                 }
             }
         };
@@ -161,6 +161,7 @@ public class ChatForm extends JFrame {
             @Override
             public void run() {
                 while (true) {
+                    outputTextArea.setCaretPosition(outputTextArea.getDocument().getLength());
                     try {
                         Thread.sleep(1000);
                         if (client.getIsNeedUpdateOutputText() == 2) {
@@ -191,6 +192,7 @@ public class ChatForm extends JFrame {
                     friendId = friendList.getSelectedValue();
                     client.setSelectedFriendId(friendId);
                     outputTextArea.setText("");
+
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -223,7 +225,9 @@ public class ChatForm extends JFrame {
             } catch (RemoteException | NotBoundException e) {
                 e.printStackTrace();
             }
-            vertical.setValue(vertical.getMaximum());
+//            vertical.setValue(vertical.getMaximum());
+            outputTextArea.setCaretPosition(outputTextArea.getDocument().getLength());
+
         }
     };
 
