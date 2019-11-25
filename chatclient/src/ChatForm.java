@@ -163,13 +163,13 @@ public class ChatForm extends JFrame {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        if (client.getIsNeedUpdateOutputText()) {
+                        if (client.getIsNeedUpdateOutputText() == 2) {
                             if (client.getUpdateOutputText() != null) {
                                 String[] message = client.getUpdateOutputText().split(";");
                                 for (int i = 0; i < message.length; i++) {
                                     outputTextArea.append("\n" + message[i]);
                                 }
-                                client.setIsNeedUpdateOutputText(false);
+                                client.setIsNeedUpdateOutputText(0);
                             }
                         }
                     } catch (RemoteException | InterruptedException e) {
@@ -186,7 +186,7 @@ public class ChatForm extends JFrame {
             @Override
             public void valueChanged(ListSelectionEvent listSelectionEvent) {
                 try {
-                    client.setIsNeedUpdateOutputText(true);
+                    client.setIsNeedUpdateOutputText(1);
                     client.setUpdateOutputText("");
                     friendId = friendList.getSelectedValue();
                     client.setSelectedFriendId(friendId);

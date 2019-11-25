@@ -469,9 +469,9 @@ public class ChatServer {
                                 HashMap<String, ChatInterface> clients = server.getClients();
                                 for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
                                     ChatInterface client = clientMap.getValue();
-                                    boolean isNeedUpdateOutputText = client.getIsNeedUpdateOutputText();
+                                    int isNeedUpdateOutputText = client.getIsNeedUpdateOutputText();
 //                                    System.out.println(client.getName()+":"+isNeedUpdateOutputText);
-                                    if (isNeedUpdateOutputText) {
+                                    if (isNeedUpdateOutputText == 1) {
                                         String clientName = client.getName();
                                         String clientId = getUserIdByName(conn, clientName);
                                         String friendId = client.getSelectedFriendId();
@@ -481,6 +481,7 @@ public class ChatServer {
                                             if (rs.next()) {
                                                 String message = rs.getString(2);
                                                 client.setUpdateOutputText(message);
+                                                client.setIsNeedUpdateOutputText(2);
                                             }
                                         } else {
                                             Statement stmt = conn.createStatement();
@@ -491,7 +492,7 @@ public class ChatServer {
                                                 if (friendId.equals(senderId) || friendId.equals(receiverId)) {
                                                     String message = rs.getString(2);
                                                     client.setUpdateOutputText(message);
-//                                            client.setIsNeedUpdateOutputText(false);
+                                                    client.setIsNeedUpdateOutputText(2);
                                                 }
                                             }
                                         }
