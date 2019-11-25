@@ -23,7 +23,7 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     private String directMessage;
     private String friendId;
     private boolean isNewMessageFromFriend;
-    private boolean isNeedUpdateOutputText;
+    private int isNeedUpdateOutputText;
     private String updateOutputText;
     private String groupName;
     private String groupMembers;
@@ -191,12 +191,12 @@ public class Chat extends UnicastRemoteObject implements ChatInterface {
     }
 
     @Override
-    public void setIsNeedUpdateOutputText(boolean i) throws RemoteException {
+    public void setIsNeedUpdateOutputText(int i) throws RemoteException {
         this.isNeedUpdateOutputText = i;
     }
 
     @Override
-    public boolean getIsNeedUpdateOutputText() throws RemoteException {
+    public int getIsNeedUpdateOutputText() throws RemoteException {
         return this.isNeedUpdateOutputText;
     }
 

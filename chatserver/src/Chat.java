@@ -22,7 +22,7 @@ public class Chat implements ChatInterface {
     private boolean isNeedUpdateFriendList;
     private String directMessage;
     private boolean isNewMessageFromFriend;
-    private boolean isNeedUpdateOutputText;
+    private int isNeedUpdateOutputText;
     private String friendId;
     private String updateOutputText;
     private String groupName;
@@ -189,12 +189,12 @@ public class Chat implements ChatInterface {
     }
 
     @Override
-    public void setIsNeedUpdateOutputText(boolean i) throws RemoteException {
+    public void setIsNeedUpdateOutputText(int i) throws RemoteException {
         this.isNeedUpdateOutputText = i;
     }
 
     @Override
-    public boolean getIsNeedUpdateOutputText() throws RemoteException {
+    public int getIsNeedUpdateOutputText() throws RemoteException {
         return this.isNeedUpdateOutputText;
     }
 

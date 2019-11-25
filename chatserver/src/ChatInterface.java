@@ -62,9 +62,9 @@ public interface ChatInterface extends Remote {
 
     public String getDirectMessage() throws RemoteException;
 
-    public void setIsNeedUpdateOutputText(boolean i) throws RemoteException;
+    public void setIsNeedUpdateOutputText(int i) throws RemoteException;
 
-    public boolean getIsNeedUpdateOutputText() throws RemoteException;
+    public int getIsNeedUpdateOutputText() throws RemoteException;
 
     public void setSelectedFriendId(String friendId) throws RemoteException;
 
