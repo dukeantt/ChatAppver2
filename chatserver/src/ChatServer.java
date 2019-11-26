@@ -293,9 +293,19 @@ public class ChatServer {
                                                 if (rs.next()) {
                                                     Statement stmt2 = conn.createStatement();
                                                     int rs2 = stmt2.executeUpdate("update friends set friends_id = concat(friends_id," + "\'group:" + groupName + ";\'" + ")" + " WHERE user_id =" + "\'" + userId + "\'");
-                                                    client.setIsNeedUpdateFriendList(true);
-                                                    friendList = getUpdatedFriendList(conn, client.getName());
-                                                    client.setFriends(friendList);
+                                                    for (Map.Entry<String, ChatInterface> subclientMap : clients.entrySet()) {
+                                                        String subClientId = subclientMap.getKey();
+                                                        String name = getUserNameById(userId);
+                                                        if (subClientId.contains(name)) {
+                                                            ChatInterface subClient = server.getClientById(subClientId);
+                                                            subClient.setIsNeedUpdateFriendList(true);
+                                                            friendList = getUpdatedFriendList(conn, subClient.getName());
+                                                            subClient.setFriends(friendList);
+                                                        }
+                                                    }
+//                                                    client.setIsNeedUpdateFriendList(true);
+//                                                    friendList = getUpdatedFriendList(conn, client.getName());
+//                                                    client.setFriends(friendList);
                                                 } else {
                                                     String SQL2 = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
                                                     PreparedStatement preparedStatement2 = conn.prepareStatement(SQL2);
@@ -303,9 +313,19 @@ public class ChatServer {
                                                     preparedStatement2.setString(2, "group:" + groupName + ";");
                                                     preparedStatement2.addBatch();
                                                     preparedStatement2.executeBatch();
-                                                    client.setIsNeedUpdateFriendList(true);
-                                                    friendList = getUpdatedFriendList(conn, client.getName());
-                                                    client.setFriends(friendList);
+                                                    for (Map.Entry<String, ChatInterface> subclientMap : clients.entrySet()) {
+                                                        String subClientId = subclientMap.getKey();
+                                                        String name = getUserNameById(userId);
+                                                        if (subClientId.contains(name)) {
+                                                            ChatInterface subClient = server.getClientById(subClientId);
+                                                            subClient.setIsNeedUpdateFriendList(true);
+                                                            friendList = getUpdatedFriendList(conn, subClient.getName());
+                                                            subClient.setFriends(friendList);
+                                                        }
+                                                    }
+//                                                    client.setIsNeedUpdateFriendList(true);
+//                                                    friendList = getUpdatedFriendList(conn, client.getName());
+//                                                    client.setFriends(friendList);
                                                 }
                                             }
                                         }
