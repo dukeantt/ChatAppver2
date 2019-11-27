@@ -18,5 +18,14 @@ client_run:
 client_build:
 	docker build --tag $(SERVER_IMG_NAME) ./thirdclient
 
+client_up2:
+	docker run -v `pwd`/fourthclient/:/usr/app --rm $(SERVER_IMG_NAME)
+
+client_run2:
+	docker run -it -v `pwd`/fourthclient/:/usr/app --rm $(SERVER_IMG_NAME) /bin/sh
+
+client_build2:
+	docker build --tag $(SERVER_IMG_NAME) ./fourthclient
+
 stop_all_job:
 	docker ps -q | xargs -t docker kill

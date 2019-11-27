@@ -126,18 +126,20 @@ public class ChatServer {
                                 conn = getConnection(DB_URL, USER_NAME, PASSWORD);
 
                                 //  GET USER ID
-                                Statement stmt1 = conn.createStatement();
-                                ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + username + "\'");
-                                if (rs1.next()) {
-                                    userId = rs1.getString(4);
-                                }
+                                userId = getUserIdByName(conn, username);
+//                                Statement stmt1 = conn.createStatement();
+//                                ResultSet rs1 = stmt1.executeQuery("select * from users where username =" + "\'" + username + "\'");
+//                                if (rs1.next()) {
+//                                    userId = rs1.getString(4);
+//                                }
 
                                 // GET FRIEND ID
-                                Statement stmt2 = conn.createStatement();
-                                ResultSet rs2 = stmt2.executeQuery("select * from users where username =" + "\'" + friendName + "\'");
-                                if (rs2.next()) {
-                                    friendId = rs2.getString(4);
-                                }
+                                friendId = getUserIdByName(conn, friendName);
+//                                Statement stmt2 = conn.createStatement();
+//                                ResultSet rs2 = stmt2.executeQuery("select * from users where username =" + "\'" + friendName + "\'");
+//                                if (rs2.next()) {
+//                                    friendId = rs2.getString(4);
+//                                }
 
                                 // ADD USER ID AND FRIEND ID TO FRIENDS TABLE
                                 if (userId != null && friendId != null) {
@@ -173,8 +175,14 @@ public class ChatServer {
                                             int rs6 = stmt6.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
                                             friendList = getUpdatedFriendList(conn, friendName);
-//                                            client2.setIsNeedUpdateFriendList(true);
-//                                            client2.setFriends(friendList);
+                                            for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                                ChatInterface client = clientMap.getValue();
+                                                if (friendName.equals(client.getName())) {
+                                                    client2 = client;
+                                                    client2.setIsNeedUpdateFriendList(true);
+                                                    client2.setFriends(friendList);
+                                                }
+                                            }
                                         } else {
                                             // IF NOT EXISTED -> INSERT NEW ROW
                                             String SQL = "INSERT INTO friends(user_id,friends_id) " + "VALUES(?,?)";
@@ -185,8 +193,14 @@ public class ChatServer {
                                             preparedStatement3.executeBatch();
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
                                             friendList = getUpdatedFriendList(conn, friendName);
-//                                            client2.setIsNeedUpdateFriendList(true);
-//                                            client2.setFriends(friendList);
+                                            for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                                ChatInterface client = clientMap.getValue();
+                                                if (friendName.equals(client.getName())) {
+                                                    client2 = client;
+                                                    client2.setIsNeedUpdateFriendList(true);
+                                                    client2.setFriends(friendList);
+                                                }
+                                            }
                                         }
 
                                         // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
@@ -213,8 +227,14 @@ public class ChatServer {
                                             int rs8 = stmt8.executeUpdate("update friends set friends_id = CONCAT(friends_id," + "\'" + userId + ";\'" + ")" + " WHERE user_id =" + "\'" + friendId + "\'");
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
                                             friendList = getUpdatedFriendList(conn, friendName);
-//                                            client2.setIsNeedUpdateFriendList(true);
-//                                            client2.setFriends(friendList);
+                                            for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                                ChatInterface client = clientMap.getValue();
+                                                if (friendName.equals(client.getName())) {
+                                                    client2 = client;
+                                                    client2.setIsNeedUpdateFriendList(true);
+                                                    client2.setFriends(friendList);
+                                                }
+                                            }
                                         } else {
                                             PreparedStatement preparedStatement2 = conn.prepareStatement(SQL);
                                             preparedStatement2.setString(1, friendId);
@@ -224,8 +244,14 @@ public class ChatServer {
                                             System.out.println("add friend successfully");
                                             // GET UPDATED USER'S FRIEND  FRIEND LIST
                                             friendList = getUpdatedFriendList(conn, friendName);
-//                                            client2.setIsNeedUpdateFriendList(true);
-//                                            client2.setFriends(friendList);
+                                            for (Map.Entry<String, ChatInterface> clientMap : clients.entrySet()) {
+                                                ChatInterface client = clientMap.getValue();
+                                                if (friendName.equals(client.getName())) {
+                                                    client2 = client;
+                                                    client2.setIsNeedUpdateFriendList(true);
+                                                    client2.setFriends(friendList);
+                                                }
+                                            }
                                         }
                                         // SET FRIEND TO ADD NULL WHEN FINISH ADD TO DATABASE
                                         server.setFriendToAdd(null, null);

@@ -1,0 +1,2 @@
+javac -d ./out/ ./src/*.java && java -cp ./out  -Djava.security.policy=client.policy ChatClient
+
