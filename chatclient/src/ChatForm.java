@@ -21,7 +21,7 @@ public class ChatForm extends JFrame {
     private JButton addFriendButton;
     private JButton createGroupButton;
     private JScrollPane scrollPane;
-//    private JScrollBar vertical;
+    //    private JScrollBar vertical;
     private String clientName;
     private String serverName;
     private String clientId;
@@ -34,7 +34,7 @@ public class ChatForm extends JFrame {
         outputTextArea.setEditable(false);
 //        vertical = scrollPane.getVerticalScrollBar();
 
-        setTitle("Simple chat app");
+        setTitle("Simple chat app - " + client.getName());
         setSize(640, 480);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -83,6 +83,7 @@ public class ChatForm extends JFrame {
                 String senderId = null;
                 boolean isNewMessage = false;
                 boolean isNewMessageFromFriend = false;
+                boolean isCorrectSelectedFriend = false;
                 String serverName = null;
                 while (true) {
                     try {
@@ -102,15 +103,34 @@ public class ChatForm extends JFrame {
                         break;
                     }
                     //RECEIVE MESSAGE FROM FRIEND
+
+
                     if (messageFromFriend != null && isNewMessageFromFriend) {
-                        outputTextArea.append("\n" + messageFromFriend);
-                        try {
-                            client.setIsNewMessageFromFriend(false);
-                            messageFromFriend = null;
+                        if (receiverId != null) {
+                            isCorrectSelectedFriend = false;
+                            if (receiverId.contains("group:")) {
+                                if (receiverId.equals(friendId)) {
+                                    System.out.println("group");
+                                    isCorrectSelectedFriend = true;
+                                }
+                            } else {
+                                if (senderId.equals(friendId)){
+                                    System.out.println("friend");
+                                    isCorrectSelectedFriend = true;
+                                }
+                            }
+                        }
+                        if (isCorrectSelectedFriend) {
+                            outputTextArea.append("\n" + messageFromFriend);
+                            try {
+
+                                client.setIsNewMessageFromFriend(false);
+                                messageFromFriend = null;
 //                            client.setDirectMessage(null, null, null);
-                        } catch (RemoteException e) {
-                            e.printStackTrace();
-                            break;
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                                break;
+                            }
                         }
                     }
                     //RECEIVE MESSAGE FROM SERVER
