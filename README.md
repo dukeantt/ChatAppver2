@@ -20,23 +20,22 @@ Step 1: Open folder chatclient with your IDE <br/>
 Step 2: Run the application with IDE <br/>
 
 ### Step to start another client
-Step 1: Open thirdclient folder with IDE
-Step 2: Open thirdclient folder in your terminal
-Step 3: Use command "make client_build"
-Step 4: use command "make client_run"
-Step 5: Use command "javac -d ./out/ ./src/*.java" to compile the code
-Step 6: Run the file ChatClientGui.class in thirdclient/out/ folder
+Step 1: Open thirdclient folder with IDE <br/>
+Step 2: Open thirdclient folder in your terminal <br/>
+Step 3: Use command "make client_build" <br/>
+Step 4: use command "make client_run" <br/>
+Step 5: Use command "javac -d ./out/ ./src/*.java" to compile the code <br/>
+Step 6: Run the file ChatClientGui.class in thirdclient/out/ folder <br/>
 
 
 ### Database: chatapp.sql
 #### Start mysql
-Open folder ChatAppver2 in terminal
-Run command docker-compose up -d (sudo docker-compose up -d)
+Open folder ChatAppver2 in terminal <br/>
+Run command docker-compose up -d (sudo docker-compose up -d) <br/>
 
-#### Import database
-Mysql information:
-user : 	  root
-password: 1
-host :    10.5.0.6
-database name: chatapp
+#### Mysql information
+user : 	  root  <br/>
+password: 1  <br/>
+host :    10.5.0.6  <br/>
+database name: chatapp  <br/>
 
