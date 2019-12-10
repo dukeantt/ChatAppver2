@@ -39,10 +39,10 @@ public class ChatForm extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // HANDLE QUIT EVENT
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
-
                 try {
                     String clientId = client.getClientId();
                     server.removeClients(clientId);
@@ -114,14 +114,15 @@ public class ChatForm extends JFrame {
                                     isCorrectSelectedFriend = true;
                                 }
                             } else {
-                                if (senderId.equals(friendId)){
+                                if (senderId.equals(friendId)) {
                                     System.out.println("friend");
                                     isCorrectSelectedFriend = true;
                                 }
                             }
                         }
                         if (isCorrectSelectedFriend) {
-                            outputTextArea.append("\n" + messageFromFriend);
+//                            outputTextArea.append("\n" + messageFromFriend);
+                            System.out.println("message from friend" + messageFromFriend);
                             try {
 
                                 client.setIsNewMessageFromFriend(false);
@@ -137,6 +138,7 @@ public class ChatForm extends JFrame {
                     if (messageOfServer != null && isNewMessage) {
                         String msg = "[" + serverName + "]: " + messageOfServer;
                         outputTextArea.append("\n" + msg);
+                        System.out.println("message from server: " + messageOfServer);
                         try {
                             client.setIsNewMessage(false);
                         } catch (RemoteException e) {
@@ -188,6 +190,7 @@ public class ChatForm extends JFrame {
                             if (client.getUpdateOutputText() != null) {
                                 String[] message = client.getUpdateOutputText().split(";");
                                 for (int i = 0; i < message.length; i++) {
+                                    System.out.println("update output text field");
                                     outputTextArea.append("\n" + message[i]);
                                 }
                                 client.setIsNeedUpdateOutputText(0);
@@ -241,6 +244,8 @@ public class ChatForm extends JFrame {
                 }
                 server.setMsg(messageInTextField);
                 inputTextField.setText("");
+                System.out.println("send button");
+                client.setIsNeedUpdateOutputText(0);
                 outputTextArea.append("\n" + "[" + client.getName() + "]: " + messageInTextField);
             } catch (RemoteException | NotBoundException e) {
                 e.printStackTrace();
