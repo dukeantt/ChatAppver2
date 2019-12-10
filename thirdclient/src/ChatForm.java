@@ -119,7 +119,7 @@ public class ChatForm extends JFrame {
                             }
                         }
                         if (isCorrectSelectedFriend) {
-                            outputTextArea.append("\n" + messageFromFriend);
+//                            outputTextArea.append("\n" + messageFromFriend);
                             try {
 
                                 client.setIsNewMessageFromFriend(false);
@@ -239,6 +239,7 @@ public class ChatForm extends JFrame {
                 }
                 server.setMsg(messageInTextField);
                 inputTextField.setText("");
+                client.setIsNeedUpdateOutputText(0);
                 outputTextArea.append("\n" + "[" + client.getName() + "]: " + messageInTextField);
             } catch (RemoteException | NotBoundException e) {
                 e.printStackTrace();
